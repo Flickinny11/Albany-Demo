@@ -154,39 +154,43 @@
   overflow: hidden;
 }
 
-// Animated gradient background that blends hero → stats
+// Gradient background — transitions from dark hero above to blue stats below
 .audience-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
+  // Visible warm-to-cool gradient
   background: linear-gradient(
     180deg,
-    rgba(0,13,38,0.04) 0%,
-    rgba(255,255,255,1) 8%,
-    rgba(248,248,252,1) 50%,
-    rgba(240,242,248,1) 80%,
-    rgba(0,27,77,0.06) 100%
+    #0d1b33 0%,
+    #101e3a 3%,
+    #e8e6f0 10%,
+    #ece9f3 30%,
+    #eae7f2 50%,
+    #dfe0ec 75%,
+    #ced3e6 92%,
+    #0d1a33 100%
   );
 
-  // Subtle radial accent
+  // Gold warm glow from center
   &::before {
     content: '';
     position: absolute;
-    top: 20%;
+    top: 30%;
     left: 50%;
     transform: translateX(-50%);
-    width: 800px;
-    height: 600px;
-    background: radial-gradient(ellipse, rgba(234,171,0,0.04) 0%, transparent 70%);
+    width: 1000px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(234,171,0,0.07) 0%, rgba(234,171,0,0.02) 40%, transparent 70%);
     pointer-events: none;
   }
 
-  // Subtle pattern texture
+  // Diamond pattern texture at visible opacity
   &::after {
     content: '';
     position: absolute;
     inset: 0;
-    opacity: 0.02;
+    opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='%230039A6' stroke-width='0.5'/%3E%3C/svg%3E");
     background-size: 60px 60px;
     pointer-events: none;
@@ -282,22 +286,38 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  // Visible cool blue-gray gradient
   background: linear-gradient(
     180deg,
-    rgba(245,245,247,1) 0%,
-    rgba(240,242,250,1) 30%,
-    rgba(245,245,247,1) 70%,
-    rgba(248,248,252,1) 100%
+    #e6e9f2 0%,
+    #dde1ee 20%,
+    #e2e5f0 50%,
+    #dee2ef 80%,
+    #d8dcea 100%
   );
 
+  // Soft radial blue glow top-right
   &::before {
     content: '';
     position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 600px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(0,57,166,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  // Bottom gold accent glow
+  &::after {
+    content: '';
+    position: absolute;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left: 20%;
+    right: 20%;
     height: 200px;
-    background: linear-gradient(to top, rgba(0,57,166,0.02), transparent);
+    background: radial-gradient(ellipse at center bottom, rgba(234,171,0,0.04) 0%, transparent 70%);
+    pointer-events: none;
   }
 }
 
@@ -314,19 +334,21 @@
   border-radius: 12px;
   overflow: hidden;
   background: var(--asu-white);
+  border: 1px solid rgba(255,255,255,0.8);
   box-shadow:
-    0 2px 4px rgba(0,0,0,0.03),
-    0 8px 24px rgba(0,0,0,0.06),
-    0 16px 48px rgba(0,0,0,0.03);
+    0 2px 4px rgba(0,0,0,0.05),
+    0 8px 24px rgba(0,0,0,0.08),
+    0 16px 48px rgba(0,0,0,0.05),
+    0 0 0 1px rgba(0,0,0,0.03);
   transition: all 0.6s var(--ease-out-expo);
   transform-style: preserve-3d;
 
   &:hover {
     transform: translateY(-8px);
     box-shadow:
-      0 4px 8px rgba(0,0,0,0.04),
-      0 16px 48px rgba(0,0,0,0.1),
-      0 32px 64px rgba(0,0,0,0.05);
+      0 4px 8px rgba(0,0,0,0.06),
+      0 16px 48px rgba(0,0,0,0.12),
+      0 32px 64px rgba(0,0,0,0.06);
 
     .college-image img {
       transform: scale(1.08);
@@ -410,22 +432,42 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  // Warm ivory/cream gradient — distinct from blue-gray colleges section
   background: linear-gradient(
     180deg,
-    rgba(248,248,252,1) 0%,
-    rgba(255,255,255,1) 30%,
-    rgba(255,255,255,1) 70%,
-    rgba(240,242,248,1) 100%
+    #dde1ed 0%,
+    #eee9e2 15%,
+    #f3efe8 35%,
+    #f5f1ea 65%,
+    #eeeae4 85%,
+    #e4e2de 100%
   );
 
+  // Gold accent glow top-right
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, rgba(234,171,0,0.03) 0%, transparent 70%);
+    top: -5%;
+    right: 5%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(234,171,0,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  // Subtle diagonal line texture
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.025;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 14px,
+      rgba(0,57,166,0.3) 14px,
+      rgba(0,57,166,0.3) 15px
+    );
     pointer-events: none;
   }
 }
@@ -442,10 +484,11 @@
   border-radius: 12px;
   overflow: hidden;
   background: var(--asu-white);
+  border: 1px solid rgba(255,255,255,0.9);
   box-shadow:
-    0 2px 8px rgba(0,0,0,0.04),
-    0 8px 24px rgba(0,0,0,0.06),
-    0 16px 48px rgba(0,0,0,0.03);
+    0 2px 8px rgba(0,0,0,0.06),
+    0 8px 24px rgba(0,0,0,0.08),
+    0 16px 48px rgba(0,0,0,0.05);
 
   .events-img-wrap {
     height: 260px;
@@ -496,10 +539,12 @@
 .event-card {
   padding: 24px;
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(255,255,255,0.8);
   background: var(--asu-white);
   transition: all 0.5s var(--ease-out-expo);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.04),
+    0 6px 16px rgba(0,0,0,0.05);
   transform-style: preserve-3d;
 
   &:hover {

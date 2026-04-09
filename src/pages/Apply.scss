@@ -1,0 +1,337 @@
+// ============== HERO ==============
+.apply-hero {
+  position: relative;
+  height: 65vh;
+  min-height: 450px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.apply-hero-bg {
+  position: absolute;
+  inset: 0;
+}
+
+.apply-hero-img {
+  width: 100%;
+  height: 120%;
+  object-fit: cover;
+}
+
+.apply-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--asu-blue-deep) 0%, rgba(0,13,38,0.4) 50%, rgba(0,13,38,0.15) 100%);
+}
+
+.apply-hero-content {
+  position: relative;
+  z-index: 2;
+  padding-bottom: 70px;
+
+  .gold-line { margin-bottom: 20px; }
+
+  h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    color: var(--asu-white);
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    color: rgba(255,255,255,0.75);
+    max-width: 580px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+}
+
+.apply-hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+// ============== FEE WAIVER ==============
+.fee-waiver-section {
+  background: var(--asu-white);
+}
+
+.fee-waiver-banner {
+  position: relative;
+  background: linear-gradient(135deg, var(--asu-blue-deep) 0%, var(--asu-blue-dark) 50%, var(--asu-blue) 100%);
+  border-radius: 16px;
+  padding: clamp(40px, 6vw, 72px);
+  overflow: hidden;
+}
+
+.fee-waiver-content {
+  position: relative;
+  z-index: 2;
+
+  .fee-waiver-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(234,171,0,0.2);
+    border: 1px solid rgba(234,171,0,0.4);
+    border-radius: 100px;
+    color: var(--asu-gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+  }
+
+  h2 {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    color: var(--asu-white);
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.7);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+}
+
+.fee-waiver-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  margin-bottom: 28px;
+
+  .code-label {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .code-value {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--asu-gold);
+    letter-spacing: 0.08em;
+  }
+}
+
+.fee-waiver-decoration {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  pointer-events: none;
+
+  .fw-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(234,171,0,0.12);
+  }
+
+  .fw-circle-1 {
+    width: 300px;
+    height: 300px;
+    top: -80px;
+    right: -60px;
+  }
+
+  .fw-circle-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -40px;
+    right: 80px;
+    border-color: rgba(255,255,255,0.06);
+  }
+
+  .fw-circle-3 {
+    width: 100px;
+    height: 100px;
+    top: 50%;
+    right: 30%;
+    transform: translateY(-50%);
+    background: rgba(234,171,0,0.05);
+  }
+}
+
+// ============== STEPS ==============
+.steps-section {
+  background: var(--asu-gray-light);
+}
+
+.steps-wrapper {
+  position: relative;
+  max-width: 700px;
+  padding-left: 60px;
+
+  @media (max-width: 480px) { padding-left: 48px; }
+}
+
+.steps-line {
+  position: absolute;
+  left: 24px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(0,57,166,0.1);
+
+  .steps-line-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--asu-gold), var(--asu-blue));
+    transform-origin: top;
+  }
+
+  @media (max-width: 480px) { left: 18px; }
+}
+
+.step-item {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 40px;
+  position: relative;
+
+  @media (max-width: 480px) { gap: 16px; }
+}
+
+.step-number-wrap {
+  position: absolute;
+  left: -60px;
+  top: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--asu-gold);
+  border-radius: 50%;
+  border: 3px solid var(--asu-white);
+  box-shadow: 0 2px 8px rgba(234,171,0,0.3);
+  z-index: 2;
+
+  .step-number {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: var(--asu-blue-deep);
+    font-weight: 700;
+  }
+
+  @media (max-width: 480px) {
+    left: -48px;
+    width: 36px;
+    height: 36px;
+    .step-number { font-size: 0.8rem; }
+  }
+}
+
+.step-content {
+  padding: 4px 0 0;
+
+  h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    color: var(--asu-blue-dark);
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--asu-gray);
+    line-height: 1.7;
+  }
+}
+
+// ============== ADMISSION TYPES ==============
+.admission-types {
+  background: var(--asu-white);
+}
+
+.admission-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: 768px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.admission-card {
+  padding: 28px;
+  border: 1px solid rgba(0,0,0,0.04);
+  transition: all 0.4s var(--ease-out-expo);
+
+  .admission-check {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--asu-gold-pale);
+    border-radius: 50%;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    color: var(--asu-blue-dark);
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: var(--asu-gray);
+    line-height: 1.6;
+  }
+
+  &:hover {
+    border-color: var(--asu-gold);
+    transform: translateY(-4px);
+  }
+}
+
+// ============== FINAL CTA ==============
+.apply-final-cta {
+  background: var(--asu-blue-deep);
+  text-align: center;
+
+  h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--asu-white);
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.7);
+    max-width: 550px;
+    margin: 0 auto;
+    line-height: 1.7;
+
+    strong { color: var(--asu-gold); }
+  }
+
+  .apply-phone {
+    margin-top: 24px;
+    font-size: 0.9rem;
+
+    a {
+      color: var(--asu-gold);
+      font-weight: 600;
+      &:hover { text-decoration: underline; }
+    }
+  }
+}

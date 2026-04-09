@@ -211,62 +211,190 @@ button {
   }
 }
 
-// Button styles
+// ===== 3D PHOTOREALISTIC BUTTON — Apply Now =====
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 36px;
-  background: var(--asu-gold);
+  padding: 17px 38px;
   color: var(--asu-blue-deep);
   font-family: var(--font-body);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.95rem;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  border-radius: 4px;
+  border-radius: 6px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.4s var(--ease-out-expo);
+  transform-style: preserve-3d;
+  perspective: 600px;
+  // Multi-layer 3D gold surface
+  background: linear-gradient(
+    170deg,
+    #FFD54F 0%,
+    #EAAB00 35%,
+    #D49B00 65%,
+    #C48E00 100%
+  );
+  // Photorealistic depth shadows
+  box-shadow:
+    0 1px 0 0 #FFE082 inset,            // top highlight
+    0 -2px 0 0 #B8860B inset,           // bottom shadow edge
+    0 2px 4px rgba(0,0,0,0.15),          // close shadow
+    0 4px 8px rgba(0,0,0,0.12),          // mid shadow
+    0 8px 24px rgba(234,171,0,0.25),     // gold ambient
+    0 16px 48px rgba(0,0,0,0.08);        // far shadow
+  transition: all 0.4s var(--ease-out-expo);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
 
+  // Surface texture grain
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, var(--asu-gold-light), var(--asu-gold));
-    opacity: 0;
-    transition: opacity 0.4s ease;
+    background: linear-gradient(
+      180deg,
+      rgba(255,255,255,0.35) 0%,
+      rgba(255,255,255,0.08) 40%,
+      rgba(0,0,0,0.05) 60%,
+      rgba(0,0,0,0.1) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  // Animated shimmer sweep
+  &::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(255,255,255,0.15) 45%,
+      rgba(255,255,255,0.35) 50%,
+      rgba(255,255,255,0.15) 55%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.8s var(--ease-out-expo);
+    z-index: 2;
+    pointer-events: none;
   }
 
   &:hover {
-    transform: translateY(-2px);
-    &::before { opacity: 1; }
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+      0 1px 0 0 #FFE082 inset,
+      0 -2px 0 0 #B8860B inset,
+      0 4px 8px rgba(0,0,0,0.15),
+      0 8px 16px rgba(0,0,0,0.1),
+      0 16px 40px rgba(234,171,0,0.35),
+      0 24px 64px rgba(0,0,0,0.1);
+
+    &::after {
+      transform: translateX(50%);
+    }
   }
 
-  span { position: relative; z-index: 1; }
+  &:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,0.2) inset,
+      0 -1px 0 0 #B8860B inset,
+      0 2px 4px rgba(0,0,0,0.2),
+      0 4px 12px rgba(234,171,0,0.2);
+  }
+
+  span, svg { position: relative; z-index: 3; }
 }
 
+// ===== 3D EXPLORE BUTTON — glass/outline with depth =====
 .btn-outline {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 32px;
-  background: transparent;
+  padding: 15px 34px;
   color: var(--asu-white);
   font-family: var(--font-body);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: 4px;
-  transition: all 0.4s var(--ease-out-expo);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  // Glass morphism with depth
+  background: linear-gradient(
+    168deg,
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.04) 100%
+  );
+  border: 1.5px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.1) inset,
+    0 -1px 0 rgba(0,0,0,0.15) inset,
+    0 2px 8px rgba(0,0,0,0.1),
+    0 8px 24px rgba(0,0,0,0.05);
+  transition: all 0.5s var(--ease-out-expo);
+
+  // Inner light
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent);
+    border-radius: 6px 6px 0 0;
+    pointer-events: none;
+  }
+
+  // Gold shimmer on hover
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, rgba(234,171,0,0.3), rgba(234,171,0,0), rgba(234,171,0,0.2));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+  }
 
   &:hover {
-    border-color: var(--asu-gold);
-    color: var(--asu-gold);
-    transform: translateY(-2px);
+    border-color: rgba(234,171,0,0.5);
+    color: var(--asu-gold-light);
+    transform: translateY(-3px);
+    background: linear-gradient(
+      168deg,
+      rgba(234,171,0,0.08) 0%,
+      rgba(255,255,255,0.06) 100%
+    );
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.12) inset,
+      0 -1px 0 rgba(0,0,0,0.1) inset,
+      0 4px 12px rgba(0,0,0,0.15),
+      0 16px 40px rgba(234,171,0,0.08);
+
+    &::after { opacity: 1; }
   }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  span { position: relative; z-index: 1; }
 }
 
 // 3D tilt interaction (JS-driven via data attribute)

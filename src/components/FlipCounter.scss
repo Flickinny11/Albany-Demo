@@ -1,0 +1,99 @@
+.flip-counter {
+  text-align: center;
+}
+
+.flip-digits-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.flip-digit-container {
+  position: relative;
+  width: clamp(48px, 7vw, 72px);
+  height: clamp(64px, 9vw, 96px);
+  perspective: 400px;
+
+  // 3D tile background
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.04) 48%,
+    rgba(0,0,0,0.08) 52%,
+    rgba(0,0,0,0.15) 100%
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.3),
+    0 8px 16px rgba(0,0,0,0.2),
+    0 16px 32px rgba(0,0,0,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+
+.flip-digit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+
+  span {
+    font-family: var(--font-heading);
+    font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+    color: var(--asu-gold);
+    text-shadow:
+      0 0 20px rgba(234,171,0,0.3),
+      0 2px 4px rgba(0,0,0,0.3);
+    line-height: 1;
+    font-weight: 400;
+  }
+}
+
+.flip-shine {
+  position: absolute;
+  top: 0;
+  left: -20%;
+  width: 140%;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.12) 0%,
+    rgba(255,255,255,0.02) 100%
+  );
+  pointer-events: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.flip-split {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(0,0,0,0.25);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+  pointer-events: none;
+  transform: translateY(-1px);
+}
+
+.flip-suffix {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: var(--asu-gold-light);
+  margin-left: 4px;
+  text-shadow: 0 0 20px rgba(234,171,0,0.2);
+}
+
+.flip-label {
+  font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+  color: rgba(255,255,255,0.55);
+  margin-top: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+}

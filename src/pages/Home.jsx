@@ -9,6 +9,8 @@ import {
   IconArrowRight, IconScrollDown
 } from '../icons/CustomIcons'
 import HeroWebGL from '../components/HeroWebGL'
+import AudienceCard from '../components/AudienceCard'
+import FlipCounter from '../components/FlipCounter'
 import './Home.scss'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -45,147 +47,178 @@ const EVENTS = [
 export default function Home() {
   const heroRef = useRef(null)
   const headlineRef = useRef(null)
-  const statsRef = useRef(null)
-  const collegesRef = useRef(null)
-  const eventsRef = useRef(null)
-  const ctaRef = useRef(null)
-  const canvasRef = useRef(null)
+  const ctaCanvasRef = useRef(null)
   const navigate = useNavigate()
 
-  // Noise-based CTA background
+  // WebGL CTA background with animated noise
   useEffect(() => {
-    const canvas = canvasRef.current
+    const canvas = ctaCanvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const noise3D = createNoise3D()
-    let animId
-    let time = 0
+    const gl = canvas.getContext('webgl', { alpha: false })
+    if (!gl) return
+
+    // Fullscreen quad shader for flowing energy effect
+    const vsSource = `attribute vec4 p;void main(){gl_Position=p;}`
+    const fsSource = `
+      precision mediump float;
+      uniform float t;
+      uniform vec2 r;
+
+      float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);
+        return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+      float fbm(vec2 p){float v=0.0,a=0.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.0;a*=0.5;}return v;}
+
+      void main(){
+        vec2 uv=gl_FragCoord.xy/r;
+        float n1=fbm(uv*3.0+t*0.15);
+        float n2=fbm(uv*4.0-t*0.1+vec2(5.0));
+        float n3=fbm(vec2(n1,n2)*3.0+t*0.08);
+
+        vec3 deep=vec3(0.0,0.02,0.06);
+        vec3 mid=vec3(0.0,0.08,0.25);
+        vec3 gold=vec3(0.92,0.67,0.0);
+
+        vec3 c=mix(deep,mid,n1*0.8);
+        c+=gold*pow(n3,3.0)*0.35;
+        c+=vec3(0.0,0.04,0.12)*pow(n2,2.0)*0.5;
+
+        // Soft gold particles
+        float p=pow(noise(uv*20.0+t*0.5),8.0)*0.4;
+        c+=gold*p;
+
+        // Vignette
+        float v=1.0-length((uv-0.5)*1.6)*0.5;
+        c*=v;
+
+        gl_FragColor=vec4(c,1.0);
+      }
+    `
+
+    function compile(src, type) {
+      const s = gl.createShader(type)
+      gl.shaderSource(s, src)
+      gl.compileShader(s)
+      return s
+    }
+
+    const prog = gl.createProgram()
+    gl.attachShader(prog, compile(vsSource, gl.VERTEX_SHADER))
+    gl.attachShader(prog, compile(fsSource, gl.FRAGMENT_SHADER))
+    gl.linkProgram(prog)
+    gl.useProgram(prog)
+
+    const buf = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW)
+    const loc = gl.getAttribLocation(prog, 'p')
+    gl.enableVertexAttribArray(loc)
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0)
+
+    const uT = gl.getUniformLocation(prog, 't')
+    const uR = gl.getUniformLocation(prog, 'r')
+
+    let raf
+    const t0 = performance.now()
 
     const resize = () => {
-      canvas.width = canvas.offsetWidth * 0.5
-      canvas.height = canvas.offsetHeight * 0.5
+      const dpr = Math.min(window.devicePixelRatio, 1.5)
+      canvas.width = canvas.offsetWidth * dpr * 0.5
+      canvas.height = canvas.offsetHeight * dpr * 0.5
+      gl.viewport(0, 0, canvas.width, canvas.height)
     }
     resize()
     window.addEventListener('resize', resize)
 
     const draw = () => {
-      time += 0.003
-      const w = canvas.width
-      const h = canvas.height
-      const imgData = ctx.createImageData(w, h)
-
-      for (let x = 0; x < w; x++) {
-        for (let y = 0; y < h; y++) {
-          const nx = x / w * 3
-          const ny = y / h * 3
-          const v = noise3D(nx, ny, time)
-          const idx = (y * w + x) * 4
-          // Deep blue to gold gradient based on noise
-          const t = (v + 1) * 0.5
-          imgData.data[idx] = Math.floor(0 + t * 40)     // R
-          imgData.data[idx + 1] = Math.floor(15 + t * 50) // G
-          imgData.data[idx + 2] = Math.floor(38 + t * 80) // B
-          imgData.data[idx + 3] = 255
-        }
-      }
-      ctx.putImageData(imgData, 0, 0)
-      animId = requestAnimationFrame(draw)
+      gl.uniform1f(uT, (performance.now() - t0) * 0.001)
+      gl.uniform2f(uR, canvas.width, canvas.height)
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+      raf = requestAnimationFrame(draw)
     }
     draw()
 
-    return () => {
-      cancelAnimationFrame(animId)
-      window.removeEventListener('resize', resize)
-    }
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize) }
   }, [])
 
   // GSAP animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Hero headline stagger
+      // Hero headline stagger — dramatic 3D entrance
       if (headlineRef.current) {
         const words = headlineRef.current.querySelectorAll('.hero-word')
         gsap.fromTo(words,
-          { y: 80, opacity: 0, rotateX: 40 },
-          { y: 0, opacity: 1, rotateX: 0, stagger: 0.12, duration: 1.2, ease: 'power3.out', delay: 0.3 }
+          { y: 100, opacity: 0, rotateX: 50, scale: 0.9 },
+          { y: 0, opacity: 1, rotateX: 0, scale: 1, stagger: 0.12, duration: 1.4, ease: 'power4.out', delay: 0.3 }
         )
       }
 
-      // Hero subtitle
       gsap.fromTo('.hero-subtitle',
         { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out', delay: 1 }
       )
 
-      // Hero CTA buttons
       gsap.fromTo('.hero-actions',
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.7, ease: 'power2.out', delay: 1.3 }
       )
 
-      // Scroll indicator
+      // Scroll indicator pulse
       gsap.to('.scroll-indicator', {
-        y: 10,
+        y: 12,
         duration: 1.5,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut'
       })
 
-      // Audience cards
-      gsap.fromTo('.audience-card', {
-        y: 60,
+      // Audience section header
+      gsap.fromTo('.audience-section .section-header > *', {
+        y: 40, opacity: 0,
+      }, {
+        y: 0, opacity: 1, stagger: 0.1, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: '.audience-section', start: 'top 78%' }
+      })
+
+      // Audience cards — 3D staggered entrance from below with rotation
+      gsap.fromTo('.audience-card-3d', {
+        y: 80,
         opacity: 0,
+        rotateX: 15,
+        scale: 0.92,
       }, {
         y: 0,
         opacity: 1,
+        rotateX: 0,
+        scale: 1,
         stagger: 0.1,
-        duration: 0.8,
+        duration: 1,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: '.audience-section',
-          start: 'top 75%',
+          start: 'top 72%',
         }
       })
 
-      // Stats counter
-      if (statsRef.current) {
-        const statEls = statsRef.current.querySelectorAll('.stat-number')
-        statEls.forEach((el) => {
-          const target = parseInt(el.dataset.value, 10)
-          gsap.fromTo(el, { innerText: 0 }, {
-            innerText: target,
-            duration: 2,
-            ease: 'power2.out',
-            snap: { innerText: 1 },
-            scrollTrigger: {
-              trigger: el,
-              start: 'top 80%',
-            },
-            onUpdate: function() {
-              el.textContent = Math.floor(this.targets()[0].innerText)
-            }
-          })
-        })
-      }
-
-      // Stats section title
-      gsap.fromTo('.stats-title', {
-        y: 40, opacity: 0,
+      // Stats section title — dramatic entrance
+      gsap.fromTo('.stats-title-wrap', {
+        y: 50, opacity: 0, scale: 0.95,
       }, {
-        y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+        y: 0, opacity: 1, scale: 1, duration: 1, ease: 'power3.out',
         scrollTrigger: { trigger: '.stats-section', start: 'top 80%' }
       })
 
-      // Colleges stagger
+      // Colleges — 3D stagger with rotation
       gsap.fromTo('.college-card', {
-        y: 80,
+        y: 100,
         opacity: 0,
+        rotateY: -8,
       }, {
         y: 0,
         opacity: 1,
+        rotateY: 0,
         stagger: 0.15,
-        duration: 0.9,
+        duration: 1,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: '.colleges-section',
@@ -193,27 +226,51 @@ export default function Home() {
         }
       })
 
-      // Events
+      // College section header
+      gsap.fromTo('.colleges-section .section-header > *', {
+        y: 30, opacity: 0,
+      }, {
+        y: 0, opacity: 1, stagger: 0.08, duration: 0.7, ease: 'power3.out',
+        scrollTrigger: { trigger: '.colleges-section', start: 'top 80%' }
+      })
+
+      // Events — stagger with depth
+      gsap.fromTo('.events-section .section-header > *', {
+        y: 30, opacity: 0,
+      }, {
+        y: 0, opacity: 1, stagger: 0.08, duration: 0.7, ease: 'power3.out',
+        scrollTrigger: { trigger: '.events-section', start: 'top 80%' }
+      })
+
       gsap.fromTo('.event-card', {
-        x: -40,
+        x: -50,
         opacity: 0,
+        rotateY: -5,
       }, {
         x: 0,
         opacity: 1,
-        stagger: 0.12,
-        duration: 0.7,
+        rotateY: 0,
+        stagger: 0.1,
+        duration: 0.8,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: '.events-section',
-          start: 'top 70%',
+          start: 'top 68%',
         }
       })
 
-      // CTA section
-      gsap.fromTo('.cta-content', {
-        y: 60, opacity: 0,
+      gsap.fromTo('.events-featured', {
+        y: 60, opacity: 0, scale: 0.95,
       }, {
-        y: 0, opacity: 1, duration: 1, ease: 'power3.out',
+        y: 0, opacity: 1, scale: 1, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: '.events-section', start: 'top 72%' }
+      })
+
+      // CTA section — dramatic entrance
+      gsap.fromTo('.cta-inner > *', {
+        y: 50, opacity: 0,
+      }, {
+        y: 0, opacity: 1, stagger: 0.12, duration: 1, ease: 'power3.out',
         scrollTrigger: { trigger: '.cta-section', start: 'top 75%' }
       })
 
@@ -222,17 +279,43 @@ export default function Home() {
     return () => ctx.revert()
   }, [])
 
+  // Magnetic effect on buttons using GSAP
+  useEffect(() => {
+    if ('ontouchstart' in window) return
+
+    const buttons = document.querySelectorAll('.hero-actions .btn-primary, .hero-actions .btn-outline')
+    const handlers = []
+
+    buttons.forEach((btn) => {
+      const onMove = (e) => {
+        const rect = btn.getBoundingClientRect()
+        const x = e.clientX - rect.left - rect.width / 2
+        const y = e.clientY - rect.top - rect.height / 2
+        gsap.to(btn, { x: x * 0.25, y: y * 0.25, duration: 0.3, ease: 'power2.out' })
+      }
+      const onLeave = () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.4)' })
+      }
+      btn.addEventListener('mousemove', onMove)
+      btn.addEventListener('mouseleave', onLeave)
+      handlers.push({ el: btn, onMove, onLeave })
+    })
+
+    return () => {
+      handlers.forEach(({ el, onMove, onLeave }) => {
+        el.removeEventListener('mousemove', onMove)
+        el.removeEventListener('mouseleave', onLeave)
+      })
+    }
+  }, [])
+
   return (
     <div className="home-page">
       {/* HERO */}
       <section ref={heroRef} className="hero-section">
         <div className="hero-video-wrap">
           <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
+            autoPlay muted loop playsInline preload="auto"
             className="hero-video"
             poster="https://www.asurams.edu/images/ou_images/College-of-Arts-and-Sciences.jpg"
           >
@@ -274,56 +357,51 @@ export default function Home() {
 
       {/* AUDIENCE SELECTOR */}
       <section className="audience-section section">
-        <div className="container">
+        {/* Animated gradient background */}
+        <div className="audience-bg" />
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div className="section-header">
             <div className="gold-line" />
             <h2 className="section-title">I Am A...</h2>
             <p className="section-subtitle">Find the resources and information tailored to you.</p>
           </div>
           <div className="audience-grid">
-            {AUDIENCE.map((a, i) => {
-              const Icon = a.icon
-              return (
-                <a
-                  href={a.path}
-                  onClick={(e) => { e.preventDefault(); navigate(a.path) }}
-                  key={i}
-                  className="audience-card card-3d"
-                  data-cursor-text="View"
-                >
-                  <div className="audience-icon">
-                    <Icon size={52} animated />
-                  </div>
-                  <h3>{a.label}</h3>
-                  <p>{a.desc}</p>
-                  <span className="audience-arrow"><IconArrowRight size={16} color="var(--asu-blue)" /></span>
-                </a>
-              )
-            })}
+            {AUDIENCE.map((a, i) => (
+              <AudienceCard
+                key={i}
+                icon={a.icon}
+                label={a.label}
+                desc={a.desc}
+                path={a.path}
+                index={i}
+                onNavigate={navigate}
+              />
+            ))}
           </div>
         </div>
       </section>
 
       {/* STATS */}
-      <section className="stats-section" ref={statsRef}>
+      <section className="stats-section">
         <div className="stats-bg" />
-        <div className="container">
-          <h2 className="stats-title">Albany State By The Numbers</h2>
+        <div className="stats-particles" />
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <div className="stats-title-wrap">
+            <div className="gold-line" style={{ margin: '0 auto 16px' }} />
+            <h2 className="stats-title">Albany State <em>By The Numbers</em></h2>
+          </div>
           <div className="stats-grid">
             {STATS.map((stat, i) => (
-              <div key={i} className="stat-item">
-                <span className="stat-number" data-value={stat.value}>0</span>
-                <span className="stat-suffix">{stat.suffix}</span>
-                <p className="stat-label">{stat.label}</p>
-              </div>
+              <FlipCounter key={i} value={stat.value} suffix={stat.suffix} label={stat.label} />
             ))}
           </div>
         </div>
       </section>
 
       {/* COLLEGES */}
-      <section className="colleges-section section" ref={collegesRef}>
-        <div className="container">
+      <section className="colleges-section section">
+        <div className="colleges-bg" />
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div className="section-header">
             <div className="gold-line" />
             <h2 className="section-title">Our Colleges</h2>
@@ -356,8 +434,9 @@ export default function Home() {
       </section>
 
       {/* NEWS & EVENTS */}
-      <section className="events-section section" ref={eventsRef}>
-        <div className="container">
+      <section className="events-section section">
+        <div className="events-bg" />
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div className="section-header">
             <div className="gold-line" />
             <h2 className="section-title">News & Events</h2>
@@ -392,11 +471,12 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="cta-section" ref={ctaRef}>
-        <canvas ref={canvasRef} className="cta-canvas" />
+      <section className="cta-section">
+        <canvas ref={ctaCanvasRef} className="cta-canvas" />
         <div className="cta-overlay" />
-        <div className="container cta-content">
-          <h2>Your Future Starts Here</h2>
+        <div className="container cta-inner" style={{ position: 'relative', zIndex: 3 }}>
+          <div className="cta-badge">Your Journey Awaits</div>
+          <h2>Your Future <em>Starts Here</em></h2>
           <p>Apply today with fee waiver code <strong>RAMSAPPLY26</strong> and join over a century of Golden Ram excellence.</p>
           <div className="cta-buttons">
             <a href="/apply" onClick={(e) => { e.preventDefault(); navigate('/apply') }} className="btn-primary" data-cursor-text="Apply">
@@ -408,6 +488,10 @@ export default function Home() {
             </a>
           </div>
         </div>
+        {/* Decorative floating rings */}
+        <div className="cta-ring cta-ring-1" />
+        <div className="cta-ring cta-ring-2" />
+        <div className="cta-ring cta-ring-3" />
       </section>
     </div>
   )

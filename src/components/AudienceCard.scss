@@ -1,0 +1,159 @@
+.audience-card-3d {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 36px 24px 32px;
+  text-align: center;
+  border-radius: 16px;
+  transform-style: preserve-3d;
+  perspective: 800px;
+  will-change: transform;
+
+  // Multi-layered 3D depth with visible edges
+  background: linear-gradient(
+    168deg,
+    rgba(255,255,255,0.98) 0%,
+    rgba(248,248,252,0.95) 100%
+  );
+  border: 1px solid rgba(0,57,166,0.06);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.04),
+    0 1px 3px rgba(0,0,0,0.06);
+  transition: border-color 0.4s ease;
+
+  &:hover {
+    border-color: rgba(234,171,0,0.3);
+
+    .aud-icon-wrap {
+      background: linear-gradient(135deg, rgba(0,57,166,0.08), rgba(234,171,0,0.1));
+      box-shadow:
+        0 4px 12px rgba(0,57,166,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .aud-arrow-wrap {
+      background: var(--asu-gold);
+      transform: translateX(4px) translateZ(20px);
+      box-shadow: 0 4px 12px rgba(234,171,0,0.3);
+
+      svg path { stroke: var(--asu-white); }
+    }
+
+    .card-ambient-glow { opacity: 1; }
+
+    .aud-label { color: var(--asu-blue); }
+  }
+}
+
+// Light refraction / glare overlay
+.card-glare {
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255,255,255,0.6) 0%,
+    rgba(255,255,255,0.1) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+  mix-blend-mode: overlay;
+}
+
+// 3D edge highlights — simulates thickness
+.card-edge-top {
+  position: absolute;
+  top: 0;
+  left: 4px;
+  right: 4px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  border-radius: 16px 16px 0 0;
+  z-index: 3;
+}
+
+.card-edge-left {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  bottom: 4px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.6), transparent);
+  z-index: 3;
+}
+
+.aud-icon-wrap {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--asu-gold-pale), rgba(0,57,166,0.04));
+  border-radius: 22px;
+  transform: translateZ(30px);
+  transition: all 0.5s var(--ease-out-expo);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.9),
+    inset 0 -1px 0 rgba(0,0,0,0.04);
+  will-change: transform;
+}
+
+.aud-label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--asu-blue-dark);
+  transform: translateZ(15px);
+  transition: color 0.3s ease;
+  letter-spacing: 0.01em;
+}
+
+.aud-desc {
+  font-size: 0.85rem;
+  color: var(--asu-gray);
+  line-height: 1.55;
+  transform: translateZ(10px);
+}
+
+.aud-arrow-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--asu-gray-light);
+  transform: translateZ(20px);
+  transition: all 0.5s var(--ease-out-expo);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+// Bottom gold ambient glow
+.card-ambient-glow {
+  position: absolute;
+  bottom: -20px;
+  left: 20%;
+  right: 20%;
+  height: 40px;
+  background: radial-gradient(ellipse, rgba(234,171,0,0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  filter: blur(10px);
+}
+
+// Touch device simplification
+@media (hover: none) and (pointer: coarse) {
+  .audience-card-3d {
+    transform: none !important;
+  }
+  .card-glare { display: none; }
+}

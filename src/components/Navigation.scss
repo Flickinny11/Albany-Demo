@@ -1,3 +1,4 @@
+// ============== UTILITY BAR ==============
 .util-bar {
   position: fixed;
   top: 0;
@@ -9,6 +10,8 @@
   display: flex;
   align-items: center;
   transition: transform 0.4s var(--ease-out-expo);
+  // Subtle bottom border glow
+  border-bottom: 1px solid rgba(234,171,0,0.08);
 
   &.util-hidden {
     transform: translateY(-100%);
@@ -17,16 +20,56 @@
   .util-inner {
     display: flex;
     justify-content: flex-end;
-    gap: 24px;
+    gap: 0;
 
     a {
-      color: rgba(255,255,255,0.7);
-      font-size: 0.75rem;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.8rem;
       font-weight: 500;
-      letter-spacing: 0.02em;
-      transition: color 0.3s ease;
+      letter-spacing: 0.04em;
+      padding: 0 16px;
+      height: var(--util-height);
+      display: flex;
+      align-items: center;
+      position: relative;
+      transition: color 0.3s ease, background 0.3s ease;
 
-      &:hover { color: var(--asu-gold); }
+      // Subtle separator dots
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        transform: translateY(-50%);
+      }
+
+      // Hover: gold underline slide + color shift
+      &::before {
+        content: '';
+        position: absolute;
+        bottom: 4px;
+        left: 16px;
+        right: 16px;
+        height: 1.5px;
+        background: var(--asu-gold);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.4s var(--ease-out-expo);
+      }
+
+      &:hover {
+        color: var(--asu-gold-light);
+        background: rgba(255,255,255,0.03);
+
+        &::before {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+      }
     }
   }
 
@@ -35,6 +78,7 @@
   }
 }
 
+// ============== MAIN NAV ==============
 .main-nav {
   position: fixed;
   top: var(--util-height);
@@ -53,10 +97,13 @@
 
   &.nav-scrolled {
     top: 0;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    box-shadow:
+      0 1px 3px rgba(0,0,0,0.06),
+      0 4px 16px rgba(0,0,0,0.04),
+      0 0 0 1px rgba(0,0,0,0.02);
   }
 
   .nav-inner {
@@ -87,10 +134,11 @@
   }
 }
 
+// ============== NAV LINKS ==============
 .nav-links-desktop {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 
   @media (max-width: 960px) {
     display: none;
@@ -99,82 +147,192 @@
 
 .nav-link {
   position: relative;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  padding: 10px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   transition: color 0.3s ease;
+  overflow: hidden;
 
   .nav-transparent & {
     color: rgba(255,255,255,0.9);
-    &:hover { color: var(--asu-gold); }
   }
 
   .nav-scrolled &,
   .main-nav:not(.nav-transparent) & {
     color: var(--asu-blue-dark);
-    &:hover { color: var(--asu-blue); }
   }
 
   .nav-link-text {
     position: relative;
     z-index: 1;
-  }
-
-  .nav-link-line {
-    position: absolute;
-    bottom: 2px;
-    left: 16px;
-    right: 16px;
-    height: 2px;
-    background: var(--asu-gold);
-    transform: scaleX(0);
-    transform-origin: left;
+    display: inline-block;
     transition: transform 0.4s var(--ease-out-expo);
   }
 
-  &:hover .nav-link-line,
-  &.active .nav-link-line {
-    transform: scaleX(1);
+  // Animated underline with thickness and glow
+  .nav-link-line {
+    position: absolute;
+    bottom: 4px;
+    left: 18px;
+    right: 18px;
+    height: 2.5px;
+    background: linear-gradient(90deg, var(--asu-gold), var(--asu-gold-light));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s var(--ease-out-expo);
+    border-radius: 2px;
+    // Gold glow beneath
+    box-shadow: 0 2px 8px rgba(234,171,0,0.3);
+  }
+
+  // Hover background fill
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 8px;
+    background: transparent;
+    transition: background 0.4s ease;
+    z-index: 0;
+  }
+
+  &:hover {
+    .nav-link-text {
+      transform: translateY(-1px);
+    }
+
+    .nav-link-line {
+      transform: scaleX(1);
+    }
+
+    &::before {
+      background: rgba(0,57,166,0.04);
+    }
+  }
+
+  .nav-transparent &:hover::before {
+    background: rgba(255,255,255,0.06);
+  }
+
+  &.active {
+    .nav-link-line { transform: scaleX(1); }
+  }
+
+  // Hover color shifts
+  &:hover {
+    .nav-scrolled &,
+    .main-nav:not(.nav-transparent) & {
+      color: var(--asu-blue);
+    }
+    .nav-transparent & {
+      color: var(--asu-gold-light);
+    }
   }
 }
 
+// ============== NAV CTA (Apply Now) — 3D BUTTON ==============
 .nav-cta {
   display: inline-flex;
   align-items: center;
-  padding: 10px 24px;
-  margin-left: 8px;
-  background: var(--asu-gold);
-  color: var(--asu-blue-deep);
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.04em;
+  padding: 11px 26px;
+  margin-left: 12px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-radius: 4px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+
+  // 3D gold surface
+  background: linear-gradient(170deg, #FFD54F 0%, #EAAB00 40%, #D49B00 100%);
+  color: var(--asu-blue-deep);
+  box-shadow:
+    0 1px 0 0 rgba(255,224,130,0.8) inset,
+    0 -1px 0 0 #B8860B inset,
+    0 2px 4px rgba(0,0,0,0.12),
+    0 4px 12px rgba(234,171,0,0.2),
+    0 8px 24px rgba(0,0,0,0.06);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
   transition: all 0.4s var(--ease-out-expo);
 
+  // Top surface sheen
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+    pointer-events: none;
+    border-radius: 6px 6px 0 0;
+  }
+
+  // Shimmer sweep
+  &::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(255,255,255,0.2) 47%,
+      rgba(255,255,255,0.4) 50%,
+      rgba(255,255,255,0.2) 53%,
+      transparent 65%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.7s var(--ease-out-expo);
+    pointer-events: none;
+  }
+
   &:hover {
-    background: var(--asu-gold-light);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(234,171,0,0.3);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow:
+      0 1px 0 0 rgba(255,224,130,0.9) inset,
+      0 -1px 0 0 #B8860B inset,
+      0 4px 8px rgba(0,0,0,0.12),
+      0 8px 20px rgba(234,171,0,0.3),
+      0 16px 40px rgba(0,0,0,0.08);
+
+    &::after {
+      transform: translateX(40%);
+    }
+  }
+
+  &:active {
+    transform: translateY(1px) scale(0.98);
   }
 }
 
+// ============== HAMBURGER ==============
 .nav-hamburger {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   background: none;
   border: none;
+  border-radius: 12px;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: rgba(0,0,0,0.04);
+  }
 
   @media (max-width: 960px) {
     display: flex;
   }
 }
 
-// Mobile overlay
+// ============== MOBILE OVERLAY ==============
 .mobile-overlay {
   position: fixed;
   inset: 0;
@@ -184,6 +342,8 @@
   flex-direction: column;
   padding: 80px 32px 40px;
   overflow-y: auto;
+  // Subtle radial glow
+  background-image: radial-gradient(ellipse at 30% 20%, rgba(0,57,166,0.15), transparent 60%);
 }
 
 .mobile-close {
@@ -195,6 +355,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: rgba(255,255,255,0.06);
+  }
 }
 
 .mobile-nav-content {
@@ -215,10 +381,14 @@
   font-size: clamp(2rem, 6vw, 3.5rem);
   color: var(--asu-white);
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  transition: color 0.3s ease;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.3s ease;
+  position: relative;
 
-  &:hover { color: var(--asu-gold); }
+  &:hover {
+    color: var(--asu-gold);
+    padding-left: 12px;
+  }
 }
 
 .mobile-cta {
@@ -247,6 +417,5 @@
   font-family: var(--font-body);
   font-size: 0.9rem;
   color: rgba(255,255,255,0.5);
-
   p { font-size: 0.9rem; }
 }

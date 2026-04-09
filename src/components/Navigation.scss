@@ -119,18 +119,21 @@
     img {
       height: 44px;
       width: auto;
+      // Default: white logo for transparent nav on hero
       filter: brightness(0) invert(1);
-      transition: filter 0.4s ease;
+      transition: filter 0.5s ease;
 
       &.logo-dark {
-        filter: none;
+        // Dark logo for scrolled/non-home: ensure full visibility on white bg
+        filter: brightness(0.15) saturate(1.5);
       }
     }
   }
 
   &.nav-scrolled .nav-logo img,
   &:not(.nav-transparent) .nav-logo img {
-    filter: none;
+    // Force dark logo on white/glass nav
+    filter: brightness(0.15) saturate(1.5) !important;
   }
 }
 

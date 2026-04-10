@@ -27,7 +27,7 @@ function loadGoogleMapsAPI() {
       return
     }
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&v=alpha&libraries=maps3d,marker`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&v=beta&loading=async`
     script.async = true
     script.onerror = () => reject(new Error('script load failed'))
     script.onload = () => {
@@ -58,9 +58,15 @@ export default function LivingCampus() {
         await loadGoogleMapsAPI()
         if (cancelled) return
 
-        // Approach A: gmp-map-3d
-        if (window.google?.maps?.maps3d?.Map3DElement) {
-          const map3D = new window.google.maps.maps3d.Map3DElement({
+        // Approach A: gmp-map-3d (use importLibrary for dynamic loading — 2026 best practice)
+        let Map3DElement = null
+        try {
+          const maps3d = await window.google.maps.importLibrary('maps3d')
+          Map3DElement = maps3d.Map3DElement
+        } catch { /* maps3d not available, fall through to Approach B */ }
+
+        if (Map3DElement) {
+          const map3D = new Map3DElement({
             center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 200 },
             tilt: 60, heading: 0, range: 800, defaultLabelsDisabled: false,
           })
@@ -98,12 +104,14 @@ export default function LivingCampus() {
         }
 
         // Approach B: Standard Google Maps with satellite + tilt
-        if (window.google?.maps?.Map) {
+        const mapsLib = await window.google.maps.importLibrary('maps')
+        if (mapsLib?.Map) {
+          const { Map: GoogleMap } = mapsLib
           const mapDiv = document.createElement('div')
           mapDiv.style.cssText = 'width:100%;height:100%'
           slot.appendChild(mapDiv)
 
-          const map = new window.google.maps.Map(mapDiv, {
+          const map = new GoogleMap(mapDiv, {
             center: CAMPUS_CENTER, zoom: 17, mapTypeId: 'satellite',
             tilt: 45, heading: 0,
             disableDefaultUI: true, zoomControl: true,

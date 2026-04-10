@@ -1,0 +1,255 @@
+// ── Heritage Scroll Section ─────────────────────────────────
+.heritage-section {
+  position: relative;
+  overflow: hidden;
+  // Background transitions through ASU brand colors via CSS
+  background: linear-gradient(
+    180deg,
+    #000310 0%,
+    #0a0e1f 5%,
+    #0d1428 15%,
+    #14192e 25%,
+    #1a1e35 35%,
+    #1e2240 45%,
+    #1a1e3a 55%,
+    #151930 65%,
+    #0e1222 75%,
+    #0a0e1a 85%,
+    #000310 100%
+  );
+}
+
+.heritage-curtains-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.heritage-bg-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  // Subtle blue radial glows
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(0, 57, 166, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 45%, rgba(242, 169, 0, 0.04) 0%, transparent 40%),
+    radial-gradient(ellipse at 30% 75%, rgba(0, 83, 155, 0.06) 0%, transparent 45%);
+}
+
+// ── Section Header ──
+.heritage-header {
+  position: relative;
+  z-index: 2;
+  padding: clamp(80px, 12vh, 140px) 0 clamp(40px, 6vh, 80px);
+  text-align: center;
+
+  .heritage-section-title {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    color: var(--asu-white);
+    margin-bottom: 14px;
+    text-shadow: 0 0 40px rgba(0, 57, 166, 0.3);
+
+    em {
+      color: var(--asu-gold);
+      font-style: italic;
+      text-shadow: 0 0 30px rgba(242, 169, 0, 0.3);
+    }
+  }
+
+  .heritage-section-sub {
+    font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .gold-line {
+    margin: 0 auto 20px;
+  }
+}
+
+// ── Chapter Layout ──
+.heritage-chapter {
+  position: relative;
+  z-index: 2;
+  padding: clamp(60px, 10vh, 120px) 0;
+}
+
+.heritage-chapter-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+// Alternate layout: even chapters flip image to left
+.heritage-chapter:nth-child(even) .heritage-chapter-inner {
+  direction: rtl;
+  > * { direction: ltr; }
+}
+
+@media (max-width: 768px) {
+  .heritage-chapter:nth-child(even) .heritage-chapter-inner {
+    direction: ltr;
+  }
+}
+
+// ── Text Column ──
+.heritage-text-col {
+  padding: clamp(16px, 3vw, 40px) 0;
+}
+
+.heritage-era-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 6px 16px;
+  background: rgba(242, 169, 0, 0.1);
+  border: 1px solid rgba(242, 169, 0, 0.2);
+  border-radius: 100px;
+  backdrop-filter: blur(8px);
+}
+
+.heritage-era-year {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--asu-gold);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.heritage-era-label {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+.heritage-title {
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
+  color: var(--asu-white);
+  margin-bottom: 18px;
+  line-height: 1.15;
+  perspective: 600px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  .heritage-char {
+    transform-origin: bottom center;
+    will-change: transform, opacity;
+  }
+}
+
+.heritage-body {
+  font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.8;
+  max-width: 520px;
+}
+
+// ── Image Column ──
+.heritage-img-col {
+  position: relative;
+}
+
+.heritage-plane {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 12px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// When curtains.js fails — show images normally
+.heritage-no-webgl .heritage-plane img,
+.heritage-plane-fallback img {
+  opacity: 1 !important;
+}
+
+// ── Divider ──
+.heritage-divider {
+  width: 1px;
+  height: 80px;
+  margin: 0 auto;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(242, 169, 0, 0.3),
+    transparent
+  );
+}
+
+// ── Chapter-specific accent glows ──
+.heritage-chapter-ink {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(139, 115, 85, 0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+}
+
+.heritage-chapter-chromatic {
+  &::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    right: 5%;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(242, 169, 0, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+}
+
+.heritage-chapter-mosaic {
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 10%;
+    left: 15%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(0, 83, 155, 0.06) 0%, transparent 55%);
+    pointer-events: none;
+  }
+}
+
+.heritage-chapter-liquid {
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 10%;
+    width: 500px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(242, 169, 0, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+  }
+}

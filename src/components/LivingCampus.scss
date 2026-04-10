@@ -1,0 +1,159 @@
+// ── Living Campus Section ───────────────────────────────────
+.living-campus-section {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  overflow: hidden;
+  background: #000310;
+}
+
+.campus-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  // Render at lower res but display at full size for smooth look
+  image-rendering: auto;
+}
+
+.campus-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.campus-header {
+  text-align: center;
+  padding-top: clamp(40px, 6vh, 80px);
+}
+
+.campus-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  color: var(--asu-white);
+  margin-bottom: 10px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+
+  em {
+    color: var(--asu-gold);
+    font-style: italic;
+    text-shadow: 0 0 30px rgba(242, 169, 0, 0.3);
+  }
+}
+
+.campus-sub {
+  font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+  color: rgba(255, 255, 255, 0.55);
+  max-width: 480px;
+  margin: 0 auto;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+// ── Time Badge ──
+.campus-time-badge {
+  position: absolute;
+  bottom: clamp(30px, 5vh, 60px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  background: rgba(0, 10, 30, 0.6);
+  border: 1px solid rgba(242, 169, 0, 0.2);
+  border-radius: 100px;
+  backdrop-filter: blur(12px);
+}
+
+.campus-time-icon {
+  font-size: 1.1rem;
+}
+
+.campus-time-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+// ── Hotspots ──
+.campus-hotspots {
+  position: absolute;
+  inset: 0;
+}
+
+.campus-hotspot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: auto;
+  cursor: pointer;
+
+  &:hover .hotspot-card {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-8px);
+    pointer-events: auto;
+  }
+}
+
+.hotspot-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--asu-gold);
+  box-shadow: 0 0 12px rgba(242, 169, 0, 0.6);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(242, 169, 0, 0.4);
+    animation: hotspotPing 2s ease-out infinite;
+  }
+}
+
+@keyframes hotspotPing {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.hotspot-card {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  background: rgba(0, 10, 30, 0.85);
+  border: 1px solid rgba(242, 169, 0, 0.2);
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+
+  strong {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    color: var(--asu-gold);
+    margin-bottom: 4px;
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+// ── Mobile Adjustments ──
+@media (max-width: 768px) {
+  .campus-hotspot {
+    display: none; // hotspots are hard to tap on mobile
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -12,6 +12,11 @@ import HeroWebGL from '../components/HeroWebGL'
 import AudienceCard from '../components/AudienceCard'
 import FlipCounter from '../components/FlipCounter'
 import './Home.scss'
+
+// Lazy-load heavy WebGL components for code-splitting
+const HeritageScroll = lazy(() => import('../components/HeritageScroll'))
+const ParticleStats = lazy(() => import('../components/ParticleStats'))
+const LivingCampus = lazy(() => import('../components/LivingCampus'))
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -355,6 +360,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* HERITAGE SCROLL — ASU's 123-year story told through shader-driven image effects */}
+      <Suspense fallback={null}>
+        <HeritageScroll />
+      </Suspense>
+
       {/* AUDIENCE SELECTOR */}
       <section className="audience-section section">
         {/* Animated gradient background */}
@@ -381,22 +391,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* STATS */}
-      <section className="stats-section">
-        <div className="stats-bg" />
-        <div className="stats-particles" />
-        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <div className="stats-title-wrap">
-            <div className="gold-line" style={{ margin: '0 auto 16px' }} />
-            <h2 className="stats-title">Albany State <em>By The Numbers</em></h2>
-          </div>
-          <div className="stats-grid">
-            {STATS.map((stat, i) => (
-              <FlipCounter key={i} value={stat.value} suffix={stat.suffix} label={stat.label} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* PARTICLE CONSTELLATION DATA WALL — stats that feel alive */}
+      <Suspense fallback={null}>
+        <ParticleStats />
+      </Suspense>
 
       {/* COLLEGES */}
       <section className="colleges-section section">
@@ -469,6 +467,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* LIVING CAMPUS — real-time 3D ray-marched SDF campus scene */}
+      <Suspense fallback={null}>
+        <LivingCampus />
+      </Suspense>
 
       {/* CTA */}
       <section className="cta-section">

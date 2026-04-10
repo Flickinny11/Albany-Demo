@@ -14,7 +14,6 @@
   padding: 0 clamp(16px, 3vw, 40px);
 }
 
-// ── Header ──
 .campus-header {
   text-align: center;
   margin-bottom: clamp(30px, 4vh, 50px);
@@ -50,7 +49,7 @@
   line-height: 1.6;
 }
 
-// ── Map Wrapper ──
+// ── Map ──
 .campus-map-wrapper {
   position: relative;
   width: 100%;
@@ -69,23 +68,13 @@
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
   background: #000D26;
 
-  // Google Maps 3D element
   gmp-map-3d {
     width: 100%;
     height: 100%;
     display: block;
   }
-
-  // MapLibre container
-  .maplibre-container {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
 }
 
-// ── Vignette Overlay ──
 .campus-vignette {
   position: absolute;
   inset: 0;
@@ -95,7 +84,7 @@
   z-index: 10;
 }
 
-// ── Loading State ──
+// ── Loading ──
 .campus-map-loading {
   position: absolute;
   inset: 0;
@@ -126,164 +115,29 @@
   to { transform: rotate(360deg); }
 }
 
-// ── MapLibre Markers ──
-.maplibre-marker {
-  position: relative;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-
-  .hotspot-dot {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: #EAAB00;
-    box-shadow: 0 0 12px rgba(234, 171, 0, 0.6), 0 0 4px rgba(234, 171, 0, 0.9);
-  }
-
-  .hotspot-ring {
-    position: absolute;
-    inset: -8px;
-    border: 2px solid rgba(234, 171, 0, 0.5);
-    border-radius: 50%;
-    animation: marker-pulse 2s ease-out infinite;
-  }
-}
-
-// ── MapLibre Popup ──
-.campus-popup {
-  .maplibregl-popup-content {
-    background: rgba(0, 27, 77, 0.9) !important;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(234, 171, 0, 0.2);
-    border-radius: 12px;
-    padding: 16px 20px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-
-    .popup-accent {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #EAAB00, rgba(234, 171, 0, 0.3));
-    }
-
-    strong {
-      display: block;
-      font-family: var(--font-heading);
-      font-size: 0.9rem;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-
-    span {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.4;
-    }
-  }
-
-  .maplibregl-popup-tip {
-    border-top-color: rgba(0, 27, 77, 0.9) !important;
-  }
-}
-
-// ── Google Maps 3D Hotspot Overlays ──
-.campus-hotspots {
+// ── Error ──
+.campus-map-error {
   position: absolute;
   inset: 0;
-  z-index: 15;
-  pointer-events: none;
-  border-radius: 24px;
-  overflow: hidden;
-}
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 5;
 
-.campus-hotspot {
-  position: absolute;
-  pointer-events: auto;
-  cursor: pointer;
-  z-index: 2;
+  p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+  }
 
-  &:hover .hotspot-card,
-  &.active .hotspot-card {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-8px);
-    pointer-events: auto;
+  .campus-error-sub {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.8rem;
   }
 }
 
-.hotspot-marker {
-  position: relative;
-  width: 16px;
-  height: 16px;
-}
-
-.hotspot-dot {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: #EAAB00;
-  box-shadow: 0 0 12px rgba(234, 171, 0, 0.6), 0 0 4px rgba(234, 171, 0, 0.9);
-}
-
-.hotspot-ring {
-  position: absolute;
-  inset: -8px;
-  border: 2px solid rgba(234, 171, 0, 0.5);
-  border-radius: 50%;
-  animation: marker-pulse 2s ease-out infinite;
-}
-
-@keyframes marker-pulse {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
-}
-
-.hotspot-card {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
-  margin-bottom: 16px;
-  padding: 16px 20px;
-  background: rgba(0, 27, 77, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(234, 171, 0, 0.2);
-  border-radius: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  overflow: hidden;
-
-  strong {
-    display: block;
-    font-family: var(--font-heading);
-    font-size: 0.9rem;
-    color: #fff;
-    margin-bottom: 4px;
-  }
-
-  span {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.4;
-  }
-}
-
-.hotspot-card-accent {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #EAAB00, rgba(234, 171, 0, 0.3));
-}
-
-// ── Mobile Hint ──
+// ── Mobile ──
 .campus-mobile-hint {
   display: none;
   text-align: center;
@@ -296,10 +150,16 @@
   }
 }
 
-// ── MapLibre Navigation Controls ──
-.campus-map-container .maplibregl-ctrl-top-right {
-  top: 12px;
-  right: 12px;
+// ── Google Maps InfoWindow styling override ──
+.gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+.gm-style-iw.gm-style-iw-c {
+  padding: 0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
 }
 
 // ── Responsive ──
@@ -327,10 +187,6 @@
 
   .campus-vignette {
     border-radius: 12px;
-  }
-
-  .campus-hotspot {
-    display: none;
   }
 
   .campus-mobile-hint {

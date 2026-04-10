@@ -16,239 +16,211 @@ const HOTSPOTS = [
   { id: 'library', label: 'James Pendergrast Memorial Library', info: '24/7 study spaces and digital resources', lat: 31.5785, lng: -84.1552 },
 ]
 
-// ── Google Maps 3D loader ──
-function loadGoogleMaps3D() {
-  return new Promise((resolve) => {
-    if (window.google?.maps?.maps3d?.Map3DElement) {
-      resolve(true)
+function loadGoogleMapsAPI() {
+  return new Promise((resolve, reject) => {
+    if (window.google?.maps) {
+      resolve()
       return
     }
     if (document.querySelector('script[src*="maps.googleapis.com"]')) {
       const t = setInterval(() => {
-        if (window.google?.maps?.maps3d?.Map3DElement) { clearInterval(t); resolve(true) }
-      }, 200)
-      setTimeout(() => { clearInterval(t); resolve(false) }, 10000)
+        if (window.google?.maps) { clearInterval(t); resolve() }
+      }, 150)
+      setTimeout(() => { clearInterval(t); reject(new Error('Google Maps load timeout')) }, 15000)
       return
     }
     const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&v=alpha&libraries=maps3d`
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&v=alpha&libraries=maps3d,marker`
     script.async = true
-    script.onerror = () => resolve(false)
+    script.onerror = () => reject(new Error('Google Maps script failed to load'))
     script.onload = () => {
       const t = setInterval(() => {
-        if (window.google?.maps?.maps3d?.Map3DElement) { clearInterval(t); resolve(true) }
-      }, 200)
-      setTimeout(() => { clearInterval(t); resolve(false) }, 10000)
+        if (window.google?.maps) { clearInterval(t); resolve() }
+      }, 150)
+      setTimeout(() => { clearInterval(t); reject(new Error('Google Maps init timeout')) }, 15000)
     }
     document.head.appendChild(script)
-    setTimeout(() => resolve(false), 12000)
   })
 }
 
-// ── MapLibre fallback with ESRI satellite tiles ──
-async function initMapLibreFallback(container) {
-  const maplibregl = (await import('maplibre-gl')).default
-  // Import MapLibre CSS
-  await import('maplibre-gl/dist/maplibre-gl.css')
+// ── APPROACH A: gmp-map-3d with cinematic flythrough ──
+function tryApproachA(container) {
+  if (!window.google?.maps?.maps3d?.Map3DElement) return null
 
-  const map = new maplibregl.Map({
-    container,
-    style: {
-      version: 8,
-      sources: {
-        'esri-satellite': {
-          type: 'raster',
-          tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-          ],
-          tileSize: 256,
-          attribution: '&copy; Esri, Maxar, Earthstar Geographics',
-          maxzoom: 19,
-        }
-      },
-      layers: [{
-        id: 'satellite',
-        type: 'raster',
-        source: 'esri-satellite',
-        minzoom: 0,
-        maxzoom: 19,
-      }],
-    },
-    center: [CAMPUS_CENTER.lng, CAMPUS_CENTER.lat],
-    zoom: 17,
-    pitch: 60,
-    bearing: 0,
-    antialias: true,
-    maxBounds: [
-      [CAMPUS_CENTER.lng - 0.01, CAMPUS_CENTER.lat - 0.01],
-      [CAMPUS_CENTER.lng + 0.01, CAMPUS_CENTER.lat + 0.01],
-    ],
+  const map3D = new window.google.maps.maps3d.Map3DElement({
+    center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 200 },
+    tilt: 60,
+    heading: 0,
+    range: 800,
+    defaultLabelsDisabled: false,
   })
 
-  // Navigation controls
-  map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right')
+  container.appendChild(map3D)
 
-  // Add hotspot markers
-  map.on('load', () => {
-    HOTSPOTS.forEach((spot) => {
-      const markerEl = document.createElement('div')
-      markerEl.className = 'maplibre-marker'
-      markerEl.innerHTML = '<div class="hotspot-dot"></div><div class="hotspot-ring"></div>'
+  let orbitStarted = false
+  const startOrbit = () => {
+    if (orbitStarted) return
+    orbitStarted = true
+    if (map3D.flyCameraTo) {
+      map3D.flyCameraTo({
+        endCamera: {
+          center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 50 },
+          tilt: 67.5,
+          heading: 45,
+          range: 600,
+        },
+        durationMillis: 3000,
+      })
+      setTimeout(() => {
+        if (map3D.flyCameraAround) {
+          map3D.flyCameraAround({
+            camera: {
+              center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 50 },
+              tilt: 60,
+              range: 600,
+            },
+            durationMillis: 60000,
+            rounds: -1,
+          })
+        }
+      }, 3500)
+    }
+  }
 
-      const popup = new maplibregl.Popup({
-        offset: 25,
-        closeButton: false,
-        className: 'campus-popup',
-      }).setHTML(`
-        <div class="popup-accent"></div>
-        <strong>${spot.label}</strong>
-        <span>${spot.info}</span>
-      `)
+  map3D.addEventListener('gmp-ready', startOrbit)
+  setTimeout(startOrbit, 5000)
 
-      new maplibregl.Marker({ element: markerEl })
-        .setLngLat([spot.lng, spot.lat])
-        .setPopup(popup)
-        .addTo(map)
+  return '3d'
+}
+
+// ── APPROACH B: Standard Maps JS API with satellite + tilt + orbit ──
+function tryApproachB(container) {
+  if (!window.google?.maps?.Map) return null
+
+  const mapDiv = document.createElement('div')
+  mapDiv.style.cssText = 'width:100%;height:100%'
+  container.appendChild(mapDiv)
+
+  const map = new window.google.maps.Map(mapDiv, {
+    center: CAMPUS_CENTER,
+    zoom: 17,
+    mapTypeId: 'satellite',
+    tilt: 45,
+    heading: 0,
+    disableDefaultUI: true,
+    zoomControl: true,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    gestureHandling: 'cooperative',
+    mapId: 'DEMO_MAP_ID',
+  })
+
+  // Add markers with info windows
+  HOTSPOTS.forEach((spot) => {
+    const marker = new window.google.maps.Marker({
+      position: { lat: spot.lat, lng: spot.lng },
+      map,
+      title: spot.label,
+      icon: {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: '#EAAB00',
+        fillOpacity: 1,
+        strokeColor: '#EAAB00',
+        strokeWeight: 2,
+      },
     })
 
-    // Gentle auto-orbit
-    let bearing = 0
-    let orbiting = true
+    const infoWindow = new window.google.maps.InfoWindow({
+      content: `<div style="background:rgba(0,27,77,0.95);padding:14px 18px;border-radius:10px;border-top:3px solid #EAAB00;min-width:180px">
+        <strong style="color:#fff;font-size:0.9rem;display:block;margin-bottom:4px">${spot.label}</strong>
+        <span style="color:rgba(255,255,255,0.7);font-size:0.75rem">${spot.info}</span>
+      </div>`,
+    })
 
-    function orbit() {
-      if (!orbiting) return
-      bearing = (bearing + 0.1) % 360
-      map.rotateTo(bearing, { duration: 0 })
-      requestAnimationFrame(orbit)
-    }
-    orbit()
-
-    // Pause orbit on user interaction, resume after
-    map.on('mousedown', () => { orbiting = false })
-    map.on('touchstart', () => { orbiting = false })
-    map.on('mouseup', () => { setTimeout(() => { orbiting = true; orbit() }, 3000) })
-    map.on('touchend', () => { setTimeout(() => { orbiting = true; orbit() }, 3000) })
+    marker.addListener('click', () => infoWindow.open(map, marker))
   })
 
-  return map
+  // Auto-orbit: rotate heading
+  let heading = 0
+  let orbiting = true
+  let orbitTimer
+
+  function orbit() {
+    if (!orbiting) return
+    heading = (heading + 0.2) % 360
+    map.setHeading(heading)
+    orbitTimer = requestAnimationFrame(orbit)
+  }
+
+  // Start orbiting after map loads
+  map.addListener('tilesloaded', () => {
+    if (!orbitTimer) orbit()
+  })
+
+  // Pause orbit on interaction, resume after
+  map.addListener('mousedown', () => { orbiting = false })
+  map.addListener('touchstart', () => { orbiting = false })
+  map.addListener('mouseup', () => { setTimeout(() => { orbiting = true; orbit() }, 3000) })
+  map.addListener('touchend', () => { setTimeout(() => { orbiting = true; orbit() }, 3000) })
+
+  return 'satellite'
 }
 
 export default function LivingCampus() {
   const sectionRef = useRef(null)
   const mapContainerRef = useRef(null)
-  const [activeHotspot, setActiveHotspot] = useState(null)
-  // 'loading' | '3d' | 'maplibre'
+  // 'loading' | '3d' | 'satellite' | 'error'
   const [mapMode, setMapMode] = useState('loading')
 
   useEffect(() => {
     let cancelled = false
-    let maplibreInstance = null
 
-    async function initMap() {
+    async function init() {
       try {
-        // Try Google Maps 3D first (Approach A)
-        const has3D = await loadGoogleMaps3D()
+        await loadGoogleMapsAPI()
         if (cancelled) return
 
-        if (has3D && window.google?.maps?.maps3d?.Map3DElement) {
-          const container = mapContainerRef.current
-          if (!container) return
-
-          const map3D = new window.google.maps.maps3d.Map3DElement({
-            center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 200 },
-            tilt: 60,
-            heading: 0,
-            range: 800,
-            defaultLabelsDisabled: false,
-          })
-
-          // Remove loading spinner
-          container.querySelectorAll('.campus-map-loading').forEach(el => el.remove())
-          container.appendChild(map3D)
-          setMapMode('3d')
-
-          // Cinematic flythrough then orbit
-          let orbitStarted = false
-          const startOrbit = () => {
-            if (orbitStarted) return
-            orbitStarted = true
-            // Fly to cinematic angle
-            if (map3D.flyCameraTo) {
-              map3D.flyCameraTo({
-                endCamera: {
-                  center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 50 },
-                  tilt: 67.5,
-                  heading: 45,
-                  range: 600,
-                },
-                durationMillis: 3000,
-              })
-              // Then orbit
-              setTimeout(() => {
-                if (map3D.flyCameraAround) {
-                  map3D.flyCameraAround({
-                    camera: {
-                      center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 50 },
-                      tilt: 60,
-                      range: 600,
-                    },
-                    durationMillis: 60000,
-                    rounds: -1,
-                  })
-                }
-              }, 3500)
-            }
-          }
-
-          map3D.addEventListener('gmp-ready', startOrbit)
-          setTimeout(startOrbit, 5000)
-          return
-        }
-
-        // Fallback: MapLibre GL JS with ESRI satellite tiles
-        if (cancelled) return
         const container = mapContainerRef.current
         if (!container) return
-
-        // Create a div for MapLibre inside the container
-        const mapDiv = document.createElement('div')
-        mapDiv.className = 'maplibre-container'
-        mapDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%'
         container.querySelectorAll('.campus-map-loading').forEach(el => el.remove())
-        container.appendChild(mapDiv)
 
-        maplibreInstance = await initMapLibreFallback(mapDiv)
-        if (!cancelled) setMapMode('maplibre')
+        // Try Approach A first
+        let mode = tryApproachA(container)
+
+        // Fall back to Approach B
+        if (!mode) {
+          mode = tryApproachB(container)
+        }
+
+        if (mode && !cancelled) {
+          setMapMode(mode)
+        } else if (!cancelled) {
+          setMapMode('error')
+        }
       } catch (err) {
-        console.warn('LivingCampus init error:', err)
-        if (!cancelled) setMapMode('maplibre')
+        console.warn('LivingCampus:', err)
+        if (!cancelled) setMapMode('error')
       }
     }
 
-    initMap()
+    init()
 
     const ctx = gsap.context(() => {
       gsap.fromTo('.living-campus-section .campus-header > *', {
         y: 40, opacity: 0,
       }, {
         y: 0, opacity: 1, stagger: 0.12, duration: 0.8, ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 75%',
-        }
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 75%' },
       })
     })
 
     return () => {
       cancelled = true
       ctx.revert()
-      if (maplibreInstance) maplibreInstance.remove()
     }
   }, [])
-
-  // For Google Maps 3D mode, hotspots are overlay HTML
-  // For MapLibre mode, hotspots are actual map markers (added in initMapLibreFallback)
-  const showOverlayHotspots = mapMode === '3d'
 
   return (
     <section ref={sectionRef} className="living-campus-section">
@@ -269,37 +241,14 @@ export default function LivingCampus() {
                 <span>Loading campus view...</span>
               </div>
             )}
+            {mapMode === 'error' && (
+              <div className="campus-map-error">
+                <p>Unable to load the 3D campus map.</p>
+                <p className="campus-error-sub">Please check that the Google Maps API key is configured correctly.</p>
+              </div>
+            )}
           </div>
-
           <div className="campus-vignette" />
-
-          {showOverlayHotspots && (
-            <div className="campus-hotspots">
-              {HOTSPOTS.map((spot, i) => (
-                <div
-                  key={spot.id}
-                  className={`campus-hotspot ${activeHotspot === spot.id ? 'active' : ''}`}
-                  style={{
-                    top: `${30 + (i % 3) * 18}%`,
-                    left: `${15 + i * 16}%`,
-                  }}
-                  onMouseEnter={() => setActiveHotspot(spot.id)}
-                  onMouseLeave={() => setActiveHotspot(null)}
-                  onClick={() => setActiveHotspot(activeHotspot === spot.id ? null : spot.id)}
-                >
-                  <div className="hotspot-marker">
-                    <div className="hotspot-dot" />
-                    <div className="hotspot-ring" />
-                  </div>
-                  <div className="hotspot-card">
-                    <div className="hotspot-card-accent" />
-                    <strong>{spot.label}</strong>
-                    <span>{spot.info}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="campus-mobile-hint">

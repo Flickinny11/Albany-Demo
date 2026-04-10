@@ -92,7 +92,7 @@ export default function LivingCampus() {
                       center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 50 },
                       tilt: 60, range: 600,
                     },
-                    durationMillis: 60000, rounds: -1,
+                    durationMillis: 60000, repeatCount: Infinity,
                   })
                 }
               }, 3500)

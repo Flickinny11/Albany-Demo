@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Curtains, Plane, ShaderPass } from 'curtainsjs'
+import { Curtains, Plane, ShaderPass, RenderTarget } from 'curtainsjs'
 import './HeritageScroll.scss'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -323,6 +323,24 @@ export default function HeritageScroll() {
     })
 
     curtains.onSuccess(() => {
+      // ── Global film grain + vignette ShaderPass (post-processing) ──
+      let grainTime = 0
+      try {
+        const grainPass = new ShaderPass(curtains, {
+          fragmentShader: GRAIN_PASS_FS,
+          uniforms: {
+            time: { name: 'uTime', type: '1f', value: 0 },
+            scrollProgress: { name: 'uScrollProgress', type: '1f', value: 0 },
+          },
+        })
+        grainPass.onRender(() => {
+          grainTime += 0.016
+          grainPass.uniforms.time.value = grainTime
+        })
+      } catch (e) {
+        // ShaderPass not supported — grain is still in individual plane shaders
+      }
+
       // Create planes for each chapter image
       const planeEls = section.querySelectorAll('.heritage-plane')
 
@@ -346,13 +364,14 @@ export default function HeritageScroll() {
         })
 
         plane.onReady(() => {
-          // ScrollTrigger drives the reveal progress
+          // ScrollTrigger pins each chapter and maps progress to shader
           const chapter = el.closest('.heritage-chapter')
           if (chapter) {
             const st = ScrollTrigger.create({
               trigger: chapter,
-              start: 'top 80%',
-              end: 'bottom 30%',
+              start: 'top center',
+              end: 'bottom center',
+              pin: false,  // pin breaks curtains plane positioning; use scrub instead
               scrub: 0.6,
               onUpdate: (self) => {
                 if (plane.uniforms && plane.uniforms.progress) {

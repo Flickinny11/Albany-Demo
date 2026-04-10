@@ -242,6 +242,22 @@ export default function ParticleStats() {
     canvas.addEventListener('mousemove', onMove)
     canvas.addEventListener('mouseleave', onLeave)
 
+    // ── Device tilt on mobile (gravitational wells) ──
+    let gyroX = 0, gyroY = 0
+    const onDeviceOrient = (e) => {
+      if (e.gamma != null) gyroX = e.gamma / 30 // -1 to 1
+      if (e.beta != null) gyroY = (e.beta - 45) / 30
+      // Simulate mouse position from tilt
+      mx = W / 2 + gyroX * W * 0.3
+      my = H / 2 + gyroY * H * 0.3
+      mouseIn = true
+    }
+    if (isMobile) window.addEventListener('deviceorientation', onDeviceOrient)
+
+    // ── Performance monitoring — fallback for low-end devices ──
+    let frameCount = 0, lastFpsCheck = performance.now(), lowFpsCount = 0
+    let useFallback = false
+
     // ── ScrollTrigger ──
     const trigger = ScrollTrigger.create({
       trigger: container,
@@ -282,7 +298,29 @@ export default function ParticleStats() {
     const SP = 0.07    // spring pull
     const DMP = 0.91   // damping
 
+    // FPS check helper
+    function checkFps() {
+      frameCount++
+      const now = performance.now()
+      if (now - lastFpsCheck > 2000) {
+        const fps = frameCount / ((now - lastFpsCheck) / 1000)
+        if (fps < 20) lowFpsCount++
+        else lowFpsCount = Math.max(0, lowFpsCount - 1)
+        // If consistently low FPS, flag for fallback
+        if (lowFpsCount >= 3) useFallback = true
+        frameCount = 0
+        lastFpsCheck = now
+      }
+    }
+
     function animate() {
+      checkFps()
+      // If persistent low FPS, signal fallback (component shows CSS counter)
+      if (useFallback) {
+        container.classList.add('particle-fallback')
+        cancelAnimationFrame(raf)
+        return
+      }
       t += 0.016
 
       // Phase within current stat quarter (0-1)
@@ -384,6 +422,7 @@ export default function ParticleStats() {
       canvas.removeEventListener('mousemove', onMove)
       canvas.removeEventListener('mouseleave', onLeave)
       window.removeEventListener('resize', resize)
+      if (isMobile) window.removeEventListener('deviceorientation', onDeviceOrient)
       gl.deleteProgram(prog)
       gl.deleteShader(vs)
       gl.deleteShader(fs)
@@ -397,6 +436,13 @@ export default function ParticleStats() {
   return (
     <section ref={containerRef} className="particle-stats-section">
       <canvas ref={canvasRef} className="particle-canvas" />
+      {/* CSS @property fallback counter for low-end devices */}
+      <div className="particle-css-fallback">
+        <div className="fallback-stat">
+          <span className="fallback-value" style={{ '--target': STATS[idx].value.replace(/[^0-9]/g, '') }}>{STATS[idx].value}</span>
+          <span className="fallback-label">{label}</span>
+        </div>
+      </div>
       <div className="particle-overlay">
         <div className="particle-label-wrap">
           <span className="particle-label" key={idx}>{label}</span>

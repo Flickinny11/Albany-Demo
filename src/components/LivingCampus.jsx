@@ -352,6 +352,48 @@ void main() {
     col = mix(col, fogCol, fogAmt);
   }
 
+  // ── Procedural grass blades on ground ──
+  // Animated simplex-noise wind sway rendered as color striation
+  if (hit.y < 0.5 && hit.x < 80.0) {
+    vec3 pos2 = ro + rd * hit.x;
+    // Blade pattern via high-freq noise
+    float bladePattern = noise(pos2.xz * 12.0 + vec2(uTime * 0.8, uTime * 0.3));
+    float bladeHeight = noise(pos2.xz * 8.0) * 0.5 + 0.5;
+    // Wind sway: simplex-like displacement
+    float windX = sin(pos2.x * 0.5 + uTime * 1.5) * 0.3 + noise(pos2.xz * 0.8 + uTime * 0.4) * 0.5;
+    float grassShade = smoothstep(0.3, 0.7, bladePattern + windX * 0.2);
+    // Lighter tips swaying in wind
+    vec3 grassTip = vec3(0.25, 0.55, 0.15);
+    vec3 grassBase2 = vec3(0.1, 0.28, 0.05);
+    bool isDaytime2 = tod > 6.5 && tod < 18.5;
+    if (!isDaytime2) { grassTip *= 0.2; grassBase2 *= 0.2; }
+    col = mix(col, mix(grassBase2, grassTip, grassShade), 0.45 * bladeHeight);
+    // Add subtle specular on grass tips for photorealism
+    if (isDaytime2) {
+      float grassSpec = pow(max(0.0, dot(reflect(rd, nor), sunDir)), 16.0) * grassShade * 0.12;
+      col += vec3(0.8, 0.9, 0.5) * grassSpec;
+    }
+  }
+
+  // ── Falling leaves (autumn months / all year for visual drama) ──
+  for (int i = 0; i < 12; i++) {
+    float fi = float(i);
+    float leafTime = uTime * 0.4 + fi * 5.0;
+    vec3 leafPos = vec3(
+      sin(fi * 3.7 + leafTime * 0.15) * 8.0 + cos(fi * 2.1) * 3.0,
+      8.0 - mod(leafTime * 0.8 + fi * 2.3, 10.0),
+      -5.0 + cos(fi * 4.3 + leafTime * 0.1) * 6.0
+    );
+    // Tumble
+    leafPos.x += sin(leafTime * 2.0 + fi) * 0.3;
+    vec3 leafDir = normalize(leafPos - ro);
+    float leafDot = max(0.0, dot(rd, leafDir));
+    float leafGlow = pow(leafDot, 600.0) * 1.8;
+    // Autumn colors: gold, orange, red
+    vec3 leafCol = mix(vec3(0.9, 0.5, 0.05), vec3(0.8, 0.2, 0.05), hash(vec2(fi, fi * 2.0)));
+    col += leafCol * leafGlow;
+  }
+
   // Fireflies at dusk/night
   if (tod < 6.0 || tod > 18.0) {
     float nightStr = tod < 6.0 ? (6.0 - tod) / 6.0 : (tod - 18.0) / 6.0;

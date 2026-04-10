@@ -58,6 +58,54 @@
   align-items: center;
 }
 
+// ── CSS @property fallback for low-end devices ──
+// Hidden by default, shown when .particle-fallback is added
+.particle-css-fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(180deg, #000310, #000d26, #000310);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.particle-fallback .particle-canvas { display: none; }
+.particle-fallback .particle-css-fallback { display: flex; }
+.particle-fallback .particle-overlay { z-index: 4; }
+
+.fallback-stat {
+  text-align: center;
+}
+
+.fallback-value {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: clamp(4rem, 12vw, 10rem);
+  font-weight: 800;
+  color: transparent;
+  background: linear-gradient(135deg, #00539B 30%, #F2A900 70%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  text-shadow: 0 0 60px rgba(0, 83, 155, 0.4);
+  animation: fallbackPulse 3s ease-in-out infinite;
+}
+
+.fallback-label {
+  display: block;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 16px;
+}
+
+@keyframes fallbackPulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
 .particle-dot {
   width: 8px;
   height: 8px;

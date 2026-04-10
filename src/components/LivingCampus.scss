@@ -49,7 +49,6 @@
   line-height: 1.6;
 }
 
-// ── Map ──
 .campus-map-wrapper {
   position: relative;
   width: 100%;
@@ -67,6 +66,15 @@
   overflow: hidden;
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
   background: #000D26;
+}
+
+// The map slot — always present, Google Maps elements appended here
+.campus-map-slot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 
   gmp-map-3d {
     width: 100%;
@@ -75,30 +83,32 @@
   }
 }
 
-.campus-vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  box-shadow: inset 0 0 100px rgba(0, 13, 38, 0.5);
-  border-radius: 24px;
-  z-index: 10;
-}
-
-// ── Loading ──
-.campus-map-loading {
+// Loading / error overlay — sits on top of the map slot
+.campus-map-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   z-index: 5;
+  background: #000D26;
 
   span {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.85rem;
     letter-spacing: 0.05em;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+  }
+
+  .campus-error-sub {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.8rem;
   }
 }
 
@@ -115,29 +125,15 @@
   to { transform: rotate(360deg); }
 }
 
-// ── Error ──
-.campus-map-error {
+.campus-vignette {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  z-index: 5;
-
-  p {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.95rem;
-  }
-
-  .campus-error-sub {
-    color: rgba(255, 255, 255, 0.35);
-    font-size: 0.8rem;
-  }
+  pointer-events: none;
+  box-shadow: inset 0 0 100px rgba(0, 13, 38, 0.5);
+  border-radius: 24px;
+  z-index: 10;
 }
 
-// ── Mobile ──
 .campus-mobile-hint {
   display: none;
   text-align: center;
@@ -150,7 +146,7 @@
   }
 }
 
-// ── Google Maps InfoWindow styling override ──
+// Google Maps InfoWindow override
 .gm-style-iw-d {
   overflow: hidden !important;
   padding: 0 !important;
@@ -162,34 +158,23 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
 }
 
-// ── Responsive ──
 @media (max-width: 1023px) {
   .campus-map-container {
     height: 60vh;
     border-radius: 16px;
   }
-
-  .campus-vignette {
-    border-radius: 16px;
-  }
+  .campus-vignette { border-radius: 16px; }
 }
 
 @media (max-width: 767px) {
   .living-campus-section {
     padding: clamp(40px, 6vh, 60px) 0;
   }
-
   .campus-map-container {
     height: 50vh;
     min-height: 300px;
     border-radius: 12px;
   }
-
-  .campus-vignette {
-    border-radius: 12px;
-  }
-
-  .campus-mobile-hint {
-    display: block;
-  }
+  .campus-vignette { border-radius: 12px; }
+  .campus-mobile-hint { display: block; }
 }

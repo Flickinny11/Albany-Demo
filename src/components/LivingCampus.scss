@@ -2,158 +2,292 @@
 .living-campus-section {
   position: relative;
   width: 100%;
-  height: 100vh;
-  min-height: 600px;
+  background: #000D26;
   overflow: hidden;
-  background: #000310;
+  padding: clamp(60px, 8vh, 100px) 0;
 }
 
-.campus-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  // Render at lower res but display at full size for smooth look
-  image-rendering: auto;
+.campus-section-inner {
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 3vw, 40px);
 }
 
-.campus-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
+// ── Header ──
 .campus-header {
   text-align: center;
-  padding-top: clamp(40px, 6vh, 80px);
+  margin-bottom: clamp(30px, 4vh, 50px);
+}
+
+.campus-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--asu-gold);
+  margin-bottom: 12px;
 }
 
 .campus-title {
   font-size: clamp(2rem, 4vw, 3.2rem);
   color: var(--asu-white);
-  margin-bottom: 10px;
-  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+  margin-bottom: 12px;
+  line-height: 1.15;
 
   em {
     color: var(--asu-gold);
     font-style: italic;
-    text-shadow: 0 0 30px rgba(242, 169, 0, 0.3);
+    text-shadow: 0 0 30px rgba(234, 171, 0, 0.25);
   }
 }
 
 .campus-sub {
-  font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+  font-size: clamp(0.9rem, 1.3vw, 1.1rem);
   color: rgba(255, 255, 255, 0.55);
-  max-width: 480px;
+  max-width: 520px;
   margin: 0 auto;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  line-height: 1.6;
 }
 
-// ── Time Badge ──
-.campus-time-badge {
+// ── Map Wrapper ──
+.campus-map-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.campus-map-container {
+  position: relative;
+  width: 100%;
+  height: 75vh;
+  min-height: 400px;
+  max-height: 800px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+  background: #000D26;
+
+  // gmp-map-3d fills its parent
+  gmp-map-3d {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+// ── Vignette Overlay ──
+.campus-vignette {
   position: absolute;
-  bottom: clamp(30px, 5vh, 60px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 100px rgba(0, 13, 38, 0.5);
+  border-radius: 24px;
+  z-index: 10;
+}
+
+// ── Loading State ──
+.campus-map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 10px 22px;
-  background: rgba(0, 10, 30, 0.6);
-  border: 1px solid rgba(242, 169, 0, 0.2);
-  border-radius: 100px;
-  backdrop-filter: blur(12px);
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+
+  span {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+  }
 }
 
-.campus-time-icon {
-  font-size: 1.1rem;
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(234, 171, 0, 0.15);
+  border-top-color: var(--asu-gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.campus-time-label {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Fallback Static Map ──
+.campus-map-fallback {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.campus-fallback-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.campus-fallback-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 13, 38, 0.3) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(0, 13, 38, 0.3) 100%
+  );
 }
 
 // ── Hotspots ──
 .campus-hotspots {
   position: absolute;
   inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  border-radius: 24px;
+  overflow: hidden;
 }
 
 .campus-hotspot {
   position: absolute;
-  width: 20px;
-  height: 20px;
   pointer-events: auto;
   cursor: pointer;
+  z-index: 2;
 
-  &:hover .hotspot-card {
+  &:hover .hotspot-card,
+  &.active .hotspot-card {
     opacity: 1;
     transform: translateX(-50%) translateY(-8px);
     pointer-events: auto;
   }
 }
 
-.hotspot-pulse {
+// ── Marker ──
+.hotspot-marker {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.hotspot-dot {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: var(--asu-gold);
-  box-shadow: 0 0 12px rgba(242, 169, 0, 0.6);
+  background: #EAAB00;
+  box-shadow: 0 0 12px rgba(234, 171, 0, 0.6), 0 0 4px rgba(234, 171, 0, 0.9);
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    border: 2px solid rgba(242, 169, 0, 0.4);
-    animation: hotspotPing 2s ease-out infinite;
+.hotspot-ring {
+  position: absolute;
+  inset: -8px;
+  border: 2px solid rgba(234, 171, 0, 0.5);
+  border-radius: 50%;
+  animation: marker-pulse 2s ease-out infinite;
+}
+
+@keyframes marker-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
   }
 }
 
-@keyframes hotspotPing {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(2.5); opacity: 0; }
-}
-
+// ── Hotspot Card ──
 .hotspot-card {
   position: absolute;
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(0);
   margin-bottom: 16px;
-  padding: 14px 18px;
-  background: rgba(0, 10, 30, 0.85);
-  border: 1px solid rgba(242, 169, 0, 0.2);
-  border-radius: 10px;
+  padding: 16px 20px;
+  background: rgba(0, 27, 77, 0.85);
   backdrop-filter: blur(12px);
+  border: 1px solid rgba(234, 171, 0, 0.2);
+  border-radius: 12px;
   white-space: nowrap;
   opacity: 0;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
+  overflow: hidden;
 
   strong {
     display: block;
     font-family: var(--font-heading);
     font-size: 0.9rem;
-    color: var(--asu-gold);
+    color: #fff;
     margin-bottom: 4px;
   }
 
   span {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
   }
 }
 
-// ── Mobile Adjustments ──
-@media (max-width: 768px) {
+.hotspot-card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #EAAB00, rgba(234, 171, 0, 0.3));
+}
+
+// ── Mobile Hint ──
+.campus-mobile-hint {
+  display: none;
+  text-align: center;
+  margin-top: 16px;
+
+  span {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.04em;
+  }
+}
+
+// ── Responsive ──
+@media (max-width: 1023px) {
+  .campus-map-container {
+    height: 60vh;
+    border-radius: 16px;
+  }
+
+  .campus-vignette {
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 767px) {
+  .living-campus-section {
+    padding: clamp(40px, 6vh, 60px) 0;
+  }
+
+  .campus-map-container {
+    height: 50vh;
+    min-height: 300px;
+    border-radius: 12px;
+  }
+
+  .campus-vignette {
+    border-radius: 12px;
+  }
+
   .campus-hotspot {
-    display: none; // hotspots are hard to tap on mobile
+    display: none;
+  }
+
+  .campus-mobile-hint {
+    display: block;
   }
 }

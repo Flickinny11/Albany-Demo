@@ -36,23 +36,49 @@ const HOTSPOTS = [
   },
 ]
 
-// Wait for Google Maps API to be fully loaded
-function waitForGoogleMaps() {
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyC1Yv_6yzUAx-p3LaYNEM-9f--G0eTVsnI'
+
+// Dynamically load Google Maps API script
+function loadGoogleMapsScript() {
   return new Promise((resolve) => {
+    // Already loaded
     if (window.google?.maps?.maps3d?.Map3DElement) {
-      resolve()
+      resolve(true)
       return
     }
-    const interval = setInterval(() => {
-      if (window.google?.maps?.maps3d?.Map3DElement) {
-        clearInterval(interval)
-        resolve()
-      }
-    }, 100)
-    setTimeout(() => {
-      clearInterval(interval)
-      resolve()
-    }, 15000)
+
+    // Check if script tag already exists
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      // Script exists but API not ready yet — poll
+      const interval = setInterval(() => {
+        if (window.google?.maps?.maps3d?.Map3DElement) {
+          clearInterval(interval)
+          resolve(true)
+        }
+      }, 200)
+      setTimeout(() => { clearInterval(interval); resolve(false) }, 12000)
+      return
+    }
+
+    // Create and insert script dynamically
+    const script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&v=alpha&libraries=maps3d`
+    script.async = true
+    script.onerror = () => resolve(false)
+    script.onload = () => {
+      // Poll until maps3d is ready
+      const interval = setInterval(() => {
+        if (window.google?.maps?.maps3d?.Map3DElement) {
+          clearInterval(interval)
+          resolve(true)
+        }
+      }, 200)
+      setTimeout(() => { clearInterval(interval); resolve(false) }, 10000)
+    }
+    document.head.appendChild(script)
+
+    // Hard timeout
+    setTimeout(() => resolve(false), 15000)
   })
 }
 
@@ -103,11 +129,11 @@ export default function LivingCampus() {
 
     async function initMap() {
       try {
-        await waitForGoogleMaps()
+        const loaded = await loadGoogleMapsScript()
 
         if (cancelled) return
 
-        if (!window.google?.maps?.maps3d?.Map3DElement) {
+        if (!loaded || !window.google?.maps?.maps3d?.Map3DElement) {
           setMapError(true)
           return
         }
@@ -198,9 +224,10 @@ export default function LivingCampus() {
             {mapError && (
               <div className="campus-map-fallback">
                 <img
-                  src={`https://maps.googleapis.com/maps/api/staticmap?center=31.5785,-84.1557&zoom=17&size=1200x800&maptype=satellite&key=${import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyC1Yv_6yzUAx-p3LaYNEM-9f--G0eTVsnI'}`}
+                  src={`https://maps.googleapis.com/maps/api/staticmap?center=31.5785,-84.1557&zoom=17&size=1200x800&maptype=satellite&key=${API_KEY}`}
                   alt="Albany State University Campus"
                   className="campus-fallback-img"
+                  onError={(e) => { e.target.src = 'https://www.asurams.edu/images/ou_images/College-of-Arts-and-Sciences.jpg' }}
                 />
                 <div className="campus-fallback-overlay" />
               </div>

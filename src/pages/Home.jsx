@@ -2,13 +2,14 @@ import { useEffect, useRef, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { createNoise3D } from 'simplex-noise'
+import { createNoise3D as _createNoise3D } from 'simplex-noise'
 import {
   IconFutureStudent, IconCurrentStudent, IconFaculty, IconFamily, IconAlumni,
   IconHealthcare, IconBusiness, IconScience, IconGraduation,
   IconArrowRight, IconScrollDown
 } from '../icons/CustomIcons'
 import HeroWebGL from '../components/HeroWebGL'
+import ErrorBoundary from '../components/ErrorBoundary'
 import AudienceCard from '../components/AudienceCard'
 import FlipCounter from '../components/FlipCounter'
 import './Home.scss'
@@ -327,7 +328,7 @@ export default function Home() {
             <source src="https://www.asurams.edu/_resources/videos/asu-home-video-2026-2.mp4" type="video/mp4" />
           </video>
           <div className="hero-overlay" />
-          <HeroWebGL />
+          <ErrorBoundary><HeroWebGL /></ErrorBoundary>
           <div className="hero-grain" />
           <div className="hero-vignette" />
         </div>
@@ -361,9 +362,11 @@ export default function Home() {
       </section>
 
       {/* HERITAGE SCROLL — ASU's 123-year story told through shader-driven image effects */}
-      <Suspense fallback={null}>
-        <HeritageScroll />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <HeritageScroll />
+        </Suspense>
+      </ErrorBoundary>
 
       {/* AUDIENCE SELECTOR */}
       <section className="audience-section section">
@@ -392,9 +395,11 @@ export default function Home() {
       </section>
 
       {/* PARTICLE CONSTELLATION DATA WALL — stats that feel alive */}
-      <Suspense fallback={null}>
-        <ParticleStats />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <ParticleStats />
+        </Suspense>
+      </ErrorBoundary>
 
       {/* COLLEGES */}
       <section className="colleges-section section">
@@ -468,10 +473,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* LIVING CAMPUS — real-time 3D ray-marched SDF campus scene */}
-      <Suspense fallback={null}>
-        <LivingCampus />
-      </Suspense>
+      {/* LIVING CAMPUS — Google Maps 3D interactive campus view */}
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <LivingCampus />
+        </Suspense>
+      </ErrorBoundary>
 
       {/* CTA */}
       <section className="cta-section">

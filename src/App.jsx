@@ -8,6 +8,7 @@ import Navigation from './components/Navigation'
 import Footer from './components/Footer'
 import CustomCursor from './components/CustomCursor'
 import ScrollProgress from './components/ScrollProgress'
+import ErrorBoundary from './components/ErrorBoundary'
 
 import Home from './pages/Home'
 import About from './pages/About'
@@ -61,8 +62,16 @@ export default function App() {
   }, [location.pathname])
 
   return (
-    <>
-      <CustomCursor />
+    <ErrorBoundary fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000D26', color: '#fff', fontFamily: 'DM Sans, sans-serif', textAlign: 'center', padding: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#EAAB00' }}>Albany State University</h1>
+          <p style={{ color: 'rgba(255,255,255,0.7)' }}>Something went wrong loading the page. Please refresh.</p>
+          <button onClick={() => window.location.reload()} style={{ marginTop: '1.5rem', padding: '12px 32px', background: '#EAAB00', color: '#000D26', border: 'none', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}>Refresh Page</button>
+        </div>
+      </div>
+    }>
+      <ErrorBoundary><CustomCursor /></ErrorBoundary>
       <ScrollProgress />
       <Navigation navigateWithTransition={navigateWithTransition} />
       <main className="page-wrapper">
@@ -75,6 +84,6 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
-    </>
+    </ErrorBoundary>
   )
 }

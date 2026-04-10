@@ -68,7 +68,7 @@ export default function LivingCampus() {
         if (Map3DElement) {
           const map3D = new Map3DElement({
             center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 200 },
-            tilt: 60, heading: 0, range: 800,
+            tilt: 60, heading: 0, range: 800, mode: 'SATELLITE',
           })
           slot.appendChild(map3D)
           setMapMode('3d')

@@ -6,7 +6,7 @@ import './LivingCampus.scss'
 gsap.registerPlugin(ScrollTrigger)
 
 const CAMPUS_CENTER = { lat: 31.5785, lng: -84.1557 }
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyC1Yv_6yzUAx-p3LaYNEM-9f--G0eTVsnI'
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyAwfB0WNqV-1kBrge-HHFAo9Vi75E2CLYA'
 
 const HOTSPOTS = [
   { id: 'admin', label: 'Office of the President', info: 'Home to university leadership and administration', lat: 31.5790, lng: -84.1555 },

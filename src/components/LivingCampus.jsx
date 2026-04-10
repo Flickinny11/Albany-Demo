@@ -8,6 +8,8 @@ gsap.registerPlugin(ScrollTrigger)
 // ASU East Campus center
 const CAMPUS_CENTER = { lat: 31.5785, lng: -84.1557 }
 
+const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyC1Yv_6yzUAx-p3LaYNEM-9f--G0eTVsnI'
+
 const HOTSPOTS = [
   {
     id: 'admin',
@@ -36,56 +38,37 @@ const HOTSPOTS = [
   },
 ]
 
-const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || 'AIzaSyC1Yv_6yzUAx-p3LaYNEM-9f--G0eTVsnI'
+// Google Maps embed URL — works without API key, shows real satellite imagery
+const MAPS_EMBED_URL = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3385.5!2d${CAMPUS_CENTER.lng}!3d${CAMPUS_CENTER.lat}!2m3!1f0!2f39.06!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88f18f6b7c2cb3bd%3A0x72de1c10fce94475!2sAlbany%20State%20University!5e1!3m2!1sen!2sus`
 
-// Dynamically load Google Maps API script
-function loadGoogleMapsScript() {
+// Try Google Maps 3D API (needs working API key)
+function loadGoogleMaps3D() {
   return new Promise((resolve) => {
-    // Already loaded
     if (window.google?.maps?.maps3d?.Map3DElement) {
       resolve(true)
       return
     }
 
-    // Check if script tag already exists
-    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-      // Script exists but API not ready yet — poll
-      const interval = setInterval(() => {
-        if (window.google?.maps?.maps3d?.Map3DElement) {
-          clearInterval(interval)
-          resolve(true)
-        }
-      }, 200)
-      setTimeout(() => { clearInterval(interval); resolve(false) }, 12000)
-      return
-    }
-
-    // Create and insert script dynamically
     const script = document.createElement('script')
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&v=alpha&libraries=maps3d`
     script.async = true
     script.onerror = () => resolve(false)
     script.onload = () => {
-      // Poll until maps3d is ready
       const interval = setInterval(() => {
         if (window.google?.maps?.maps3d?.Map3DElement) {
           clearInterval(interval)
           resolve(true)
         }
       }, 200)
-      setTimeout(() => { clearInterval(interval); resolve(false) }, 10000)
+      setTimeout(() => { clearInterval(interval); resolve(false) }, 8000)
     }
     document.head.appendChild(script)
-
-    // Hard timeout
-    setTimeout(() => resolve(false), 15000)
+    setTimeout(() => resolve(false), 10000)
   })
 }
 
 function startOrbitAnimation(map3D) {
   if (!map3D) return
-
-  // Fly to a cinematic angle first
   if (map3D.flyCameraTo) {
     map3D.flyCameraTo({
       endCamera: {
@@ -96,8 +79,6 @@ function startOrbitAnimation(map3D) {
       },
       durationMillis: 3000,
     })
-
-    // Then start orbiting
     setTimeout(() => {
       if (map3D.flyCameraAround) {
         map3D.flyCameraAround({
@@ -117,73 +98,61 @@ function startOrbitAnimation(map3D) {
 export default function LivingCampus() {
   const sectionRef = useRef(null)
   const mapContainerRef = useRef(null)
-  const map3dRef = useRef(null)
   const [activeHotspot, setActiveHotspot] = useState(null)
-  const [mapLoaded, setMapLoaded] = useState(false)
-  const [mapError, setMapError] = useState(false)
-  const orbitStartedRef = useRef(false)
+  // 'loading' | '3d' | 'embed'
+  const [mapMode, setMapMode] = useState('loading')
 
-  // Initialize map on mount
   useEffect(() => {
     let cancelled = false
 
     async function initMap() {
       try {
-        const loaded = await loadGoogleMapsScript()
+        const has3D = await loadGoogleMaps3D()
 
         if (cancelled) return
 
-        if (!loaded || !window.google?.maps?.maps3d?.Map3DElement) {
-          setMapError(true)
-          return
+        if (has3D && window.google?.maps?.maps3d?.Map3DElement) {
+          // 3D API available — use it
+          const container = mapContainerRef.current
+          if (!container) return
+
+          const map3D = new window.google.maps.maps3d.Map3DElement({
+            center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 200 },
+            tilt: 60,
+            heading: 0,
+            range: 800,
+            defaultLabelsDisabled: false,
+          })
+
+          // Clear loading state and insert map
+          container.querySelectorAll('.campus-map-loading').forEach(el => el.remove())
+          container.appendChild(map3D)
+          setMapMode('3d')
+
+          let orbitStarted = false
+          map3D.addEventListener('gmp-ready', () => {
+            if (!orbitStarted) {
+              orbitStarted = true
+              startOrbitAnimation(map3D)
+            }
+          })
+          setTimeout(() => {
+            if (!orbitStarted) {
+              orbitStarted = true
+              startOrbitAnimation(map3D)
+            }
+          }, 4000)
+        } else {
+          // 3D not available — use embedded Google Maps (no API key needed)
+          if (!cancelled) setMapMode('embed')
         }
-
-        const container = mapContainerRef.current
-        if (!container) return
-
-        container.innerHTML = ''
-
-        const map3D = new window.google.maps.maps3d.Map3DElement({
-          center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng, altitude: 200 },
-          tilt: 60,
-          heading: 0,
-          range: 800,
-          defaultLabelsDisabled: false,
-        })
-
-        container.appendChild(map3D)
-        map3dRef.current = map3D
-
-        const onReady = () => {
-          if (cancelled) return
-          setMapLoaded(true)
-          if (!orbitStartedRef.current) {
-            orbitStartedRef.current = true
-            startOrbitAnimation(map3D)
-          }
-        }
-
-        map3D.addEventListener('gmp-ready', onReady)
-
-        // Fallback timeout in case gmp-ready doesn't fire
-        setTimeout(() => {
-          if (!cancelled && !orbitStartedRef.current) {
-            setMapLoaded(true)
-            orbitStartedRef.current = true
-            startOrbitAnimation(map3D)
-          }
-        }, 4000)
-      } catch (err) {
-        if (!cancelled) {
-          console.warn('LivingCampus: Map init error', err)
-          setMapError(true)
-        }
+      } catch {
+        if (!cancelled) setMapMode('embed')
       }
     }
 
     initMap()
 
-    // GSAP scroll animation for section reveal
     const ctx = gsap.context(() => {
       gsap.fromTo('.campus-header > *', {
         y: 40, opacity: 0,
@@ -209,33 +178,40 @@ export default function LivingCampus() {
           <div className="campus-eyebrow">EXPLORE CAMPUS</div>
           <h2 className="campus-title">Your Campus. <em>Your Home.</em></h2>
           <p className="campus-sub">
-            Explore Albany State University&apos;s historic East Campus in immersive 3D.
+            Explore Albany State University&apos;s historic East Campus — real satellite imagery, interactive controls.
           </p>
         </div>
 
         <div className="campus-map-wrapper">
           <div ref={mapContainerRef} className="campus-map-container">
-            {!mapLoaded && !mapError && (
+            {/* Loading spinner */}
+            {mapMode === 'loading' && (
               <div className="campus-map-loading">
                 <div className="loading-spinner" />
                 <span>Loading campus view...</span>
               </div>
             )}
-            {mapError && (
-              <div className="campus-map-fallback">
-                <img
-                  src={`https://maps.googleapis.com/maps/api/staticmap?center=31.5785,-84.1557&zoom=17&size=1200x800&maptype=satellite&key=${API_KEY}`}
-                  alt="Albany State University Campus"
-                  className="campus-fallback-img"
-                  onError={(e) => { e.target.src = 'https://www.asurams.edu/images/ou_images/College-of-Arts-and-Sciences.jpg' }}
-                />
-                <div className="campus-fallback-overlay" />
-              </div>
+
+            {/* Embedded Google Maps — always works, no API key needed */}
+            {mapMode === 'embed' && (
+              <iframe
+                className="campus-embed-map"
+                src={MAPS_EMBED_URL}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="eager"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Albany State University Campus Map"
+              />
             )}
           </div>
 
+          {/* Vignette */}
           <div className="campus-vignette" />
 
+          {/* Hotspot markers */}
           <div className="campus-hotspots">
             {HOTSPOTS.map((spot, i) => (
               <div

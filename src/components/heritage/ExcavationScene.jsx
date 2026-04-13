@@ -161,9 +161,10 @@ export default function ExcavationScene({
 
         {/* Bloom — subtle natural glow, not blown-out */}
         <Bloom
-          intensity={bloomIntensity * 0.6}
-          luminanceThreshold={0.8}
+          intensity={bloomIntensity * 0.5}
+          luminanceThreshold={0.9}
           luminanceSmoothing={0.4}
+          mipmapBlur
           kernelSize={isMobile ? KernelSize.SMALL : KernelSize.LARGE}
         />
 

@@ -15,7 +15,7 @@ import FlipCounter from '../components/FlipCounter'
 import './Home.scss'
 
 // Lazy-load heavy WebGL components for code-splitting
-const HeritageScroll = lazy(() => import('../components/HeritageScroll'))
+const HeritageExcavation = lazy(() => import('../components/heritage/HeritageExcavation'))
 const ParticleStats = lazy(() => import('../components/ParticleStats'))
 const LivingCampus = lazy(() => import('../components/LivingCampus'))
 
@@ -361,10 +361,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HERITAGE SCROLL — ASU's 123-year story told through shader-driven image effects */}
+      {/* EXCAVATION OF LEGACY — 3D archaeological excavation through ASU's 123-year history */}
       <ErrorBoundary>
         <Suspense fallback={null}>
-          <HeritageScroll />
+          <HeritageExcavation />
         </Suspense>
       </ErrorBoundary>
 

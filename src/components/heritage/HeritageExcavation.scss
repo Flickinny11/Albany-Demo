@@ -1,0 +1,248 @@
+// ── Excavation of Legacy — Heritage Section ────────────────
+// Archaeological scroll-driven 3D experience
+
+.excavation-section {
+  position: relative;
+  width: 100%;
+  // Background gradient matching ASU brand
+  background: linear-gradient(
+    180deg,
+    #000310 0%,
+    #000D26 10%,
+    #00174D 50%,
+    #000D26 90%,
+    #000310 100%
+  );
+}
+
+// ── Scroll spacer — creates 500vh of scroll distance ──
+.excavation-scroll-spacer {
+  height: 500vh;
+  pointer-events: none;
+}
+
+// ── R3F Canvas wrapper ──
+.excavation-canvas-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+// ── curtainsjs container ──
+.excavation-curtains-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+// ── Image planes wrapper ──
+.excavation-images-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 clamp(24px, 5vw, 80px);
+}
+
+.excavation-era-image {
+  position: absolute;
+  right: clamp(24px, 5vw, 80px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(280px, 35vw, 520px);
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    0 0 60px rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.era-image-fallback img {
+  opacity: 1 !important;
+}
+
+// ── Text overlays ──
+.excavation-overlays {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+// ── Header card ──
+.excavation-header-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 90%;
+  max-width: 800px;
+
+  .gold-line {
+    margin: 0 auto 24px;
+  }
+}
+
+.excavation-header-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  color: var(--asu-white);
+  margin-bottom: 18px;
+  line-height: 1.1;
+  text-shadow: 0 0 40px rgba(0, 57, 166, 0.3);
+  perspective: 600px;
+
+  em {
+    color: var(--asu-gold);
+    font-style: italic;
+    text-shadow: 0 0 30px rgba(242, 169, 0, 0.4);
+  }
+
+  // SplitText character spans
+  div {
+    display: inline-block;
+    transform-origin: bottom center;
+    will-change: transform, opacity;
+  }
+}
+
+.excavation-header-sub {
+  font-family: var(--font-body);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  color: rgba(255, 255, 255, 0.55);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+// ── Era cards ──
+.excavation-era-card {
+  position: absolute;
+  left: clamp(24px, 5vw, 80px);
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: clamp(320px, 35vw, 500px);
+  padding: clamp(16px, 3vw, 40px) 0;
+  pointer-events: auto;
+}
+
+.excavation-era-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 8px 20px;
+  background: rgba(212, 168, 67, 0.1);
+  border: 1px solid rgba(212, 168, 67, 0.25);
+  border-radius: 100px;
+  backdrop-filter: blur(8px);
+}
+
+.excavation-era-year {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--asu-gold);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.excavation-era-label {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+
+.excavation-era-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
+  color: var(--asu-white);
+  margin-bottom: 18px;
+  line-height: 1.15;
+  perspective: 600px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  // SplitText character spans
+  div {
+    display: inline-block;
+    transform-origin: bottom center;
+    will-change: transform, opacity;
+  }
+}
+
+.excavation-era-body {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.8;
+  max-width: 520px;
+}
+
+// ── Mobile responsive ──
+@media (max-width: 768px) {
+  .excavation-scroll-spacer {
+    height: 400vh; // Shorter scroll on mobile
+  }
+
+  .excavation-era-card {
+    left: 20px;
+    right: 20px;
+    top: auto;
+    bottom: 15%;
+    transform: none;
+    max-width: 100%;
+  }
+
+  .excavation-era-image {
+    right: auto;
+    left: 50%;
+    top: 25%;
+    transform: translate(-50%, -50%);
+    width: 85vw;
+    max-width: 400px;
+  }
+
+  .excavation-header-card {
+    top: 40%;
+    padding: 0 16px;
+  }
+
+  .excavation-era-badge {
+    padding: 6px 14px;
+    gap: 8px;
+  }
+}
+
+// ── Reduced motion preference ──
+@media (prefers-reduced-motion: reduce) {
+  .excavation-section * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}

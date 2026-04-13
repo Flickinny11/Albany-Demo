@@ -22,9 +22,9 @@ const ERAS = [
     dissolveRange: [0.08, 0.30],
     textRange: [0.12, 0.30],
     colors: {
-      a: [0.545, 0.271, 0.075], // #8B4513 terra cotta
-      b: [0.627, 0.322, 0.176], // #A0522D
-      c: [0.831, 0.659, 0.263], // #D4A843
+      a: [0.42, 0.34, 0.28], // Warm clay-brown — realistic terra cotta stone
+      b: [0.55, 0.42, 0.30], // Lighter warm tan veining
+      c: [0.78, 0.68, 0.52], // Pale cream-gold mineral highlights
     },
     img: 'https://www.asurams.edu/images/ou_images/College-of-Arts-and-Sciences.jpg',
   },
@@ -39,9 +39,9 @@ const ERAS = [
     dissolveRange: [0.30, 0.55],
     textRange: [0.35, 0.55],
     colors: {
-      a: [0.784, 0.569, 0.180], // #C8912E amber sandstone
-      b: [0.855, 0.647, 0.125], // #DAA520
-      c: [1.000, 0.843, 0.000], // #FFD700
+      a: [0.62, 0.50, 0.36], // Sandy beige — realistic layered sandstone
+      b: [0.72, 0.58, 0.40], // Warm tan strata
+      c: [0.85, 0.76, 0.58], // Pale gold-cream mineral deposits
     },
     img: 'https://www.asurams.edu/images/ou_images/College-of-Professional-Studies.jpg',
   },
@@ -56,9 +56,9 @@ const ERAS = [
     dissolveRange: [0.55, 0.78],
     textRange: [0.60, 0.78],
     colors: {
-      a: [0.184, 0.310, 0.310], // #2F4F4F dark slate
-      b: [0.212, 0.271, 0.310], // #36454F
-      c: [0.439, 0.502, 0.565], // #708090
+      a: [0.22, 0.25, 0.30], // Deep blue-gray — realistic dark slate
+      b: [0.32, 0.36, 0.42], // Lighter slate veining
+      c: [0.48, 0.52, 0.58], // Silver-gray mica flecks
     },
     img: 'https://www.asurams.edu/images/ou_images/Darton-College-of-Health-Professions.jpg',
   },
@@ -73,9 +73,9 @@ const ERAS = [
     dissolveRange: [0.78, 1.0],
     textRange: [0.82, 1.0],
     colors: {
-      a: [0.831, 0.659, 0.263], // #D4A843 pure gold
-      b: [1.000, 0.843, 0.000], // #FFD700
-      c: [1.000, 0.980, 0.804], // #FFFACD
+      a: [0.50, 0.40, 0.22], // Deep gold-brown — realistic gold-bearing quartz
+      b: [0.72, 0.58, 0.30], // Rich gold veining
+      c: [0.88, 0.78, 0.48], // Bright gold mineral highlights
     },
     img: 'https://www.asurams.edu/images/graduate%20photo%205.jpg',
   },

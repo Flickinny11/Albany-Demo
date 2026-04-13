@@ -210,32 +210,60 @@
     height: 400vh; // Shorter scroll on mobile
   }
 
-  .excavation-era-card {
-    left: 20px;
-    right: 20px;
-    top: auto;
-    bottom: 15%;
-    transform: none;
-    max-width: 100%;
-  }
-
-  .excavation-era-image {
-    right: auto;
-    left: 50%;
-    top: 25%;
-    transform: translate(-50%, -50%);
-    width: 85vw;
-    max-width: 400px;
-  }
-
   .excavation-header-card {
-    top: 40%;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92%;
+    max-width: 600px;
     padding: 0 16px;
+    text-align: center;
+  }
+
+  .excavation-header-title {
+    font-size: clamp(1.8rem, 7vw, 2.8rem);
+    text-align: center;
+  }
+
+  .excavation-header-sub {
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .excavation-era-card {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: 12%;
+    transform: translateX(-50%);
+    max-width: 90%;
+    width: 90%;
+    text-align: center;
   }
 
   .excavation-era-badge {
     padding: 6px 14px;
     gap: 8px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .excavation-era-title {
+    text-align: center;
+  }
+
+  .excavation-era-body {
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .excavation-era-image {
+    right: auto;
+    left: 50%;
+    top: 28%;
+    transform: translate(-50%, -50%);
+    width: 85vw;
+    max-width: 400px;
   }
 }
 

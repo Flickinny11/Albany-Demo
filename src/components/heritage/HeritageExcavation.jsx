@@ -158,14 +158,16 @@ export default function HeritageExcavation() {
           }}
         >
           <Canvas
+            shadows
             dpr={isMobile ? [1, 1.5] : [1, 2]}
             performance={{ min: 0.5 }}
             gl={{
               powerPreference: 'high-performance',
               antialias: !isMobile,
               alpha: false,
+              toneMapping: 0, // Disable default — postprocessing handles it
             }}
-            camera={{ position: [0, 4, 5], fov: 55, near: 0.1, far: 100 }}
+            camera={{ position: [0, 4, 6], fov: 52, near: 0.1, far: 100 }}
           >
             <color attach="background" args={['#000D26']} />
             <fog attach="fog" args={['#000D26', 8, 25]} />

@@ -13,9 +13,16 @@ import { BlendFunction, ToneMappingMode, KernelSize } from 'postprocessing'
 import * as THREE from 'three'
 
 /**
- * Dynamically load LensFlare — it has older peer deps but works at runtime.
+ * Dynamically load LensFlare to handle peer dep mismatch gracefully.
+ *
+ * LensFlare API (confirmed via research):
+ * - Must be INSIDE <EffectComposer> as a child
+ * - position: {x, y, z} object (NOT Vector3 or array)
+ * - colorGain: THREE.Color
+ * - starBurst: very GPU-intensive, disable on mobile
+ * - dirtTextureFile: path to 16:9 lens dirt texture (optional but improves quality)
  */
-function LensFlareWrapper({ enabled, progress, colorGain }) {
+function LensFlareWrapper({ enabled, isMobile }) {
   const [LensFlare, setLensFlare] = useState(null)
 
   useEffect(() => {
@@ -29,30 +36,35 @@ function LensFlareWrapper({ enabled, progress, colorGain }) {
   return (
     <LensFlare
       enabled={true}
-      opacity={0.6}
-      position={new THREE.Vector3(0, 8, 0)}
+      opacity={0.5}
+      position={{ x: 0, y: 8, z: -5 }}
       starPoints={6}
-      glareSize={0.4}
-      flareSize={0.01}
-      flareSpeed={0.4}
-      colorGain={colorGain}
+      glareSize={0.35}
+      flareSize={0.004}
+      flareSpeed={0.3}
+      flareShape={0.1}
+      colorGain={new THREE.Color(0.83, 0.66, 0.26)}
       anamorphic={false}
       secondaryGhosts={true}
-      ghostScale={0.3}
+      ghostScale={0.15}
       aditionalStreaks={true}
       animated={true}
+      starBurst={!isMobile}
+      haloScale={0.5}
+      followMouse={false}
     />
   )
 }
 
 /**
- * Cinematic post-processing pipeline.
- * N8AO + Bloom + LensFlare + DOF + Vignette + ChromAb + Noise + AgX ToneMapping
+ * Cinematic post-processing pipeline:
+ * N8AO → Bloom → LensFlare → DOF → Vignette → ChromAb → Noise → AgX ToneMapping
  *
- * SSGI from realism-effects is skipped in this build because it requires
- * manual EffectComposer integration (not compatible with R3F's declarative EffectComposer).
- * N8AO provides the ambient occlusion, Bloom provides the glow, and the geological
- * CSM shaders provide the emissive edge lighting for photorealism.
+ * N8AO provides navy-tinted ambient occlusion for deep stone crevice shadows.
+ * Bloom picks up HDR emissive from dissolve edge glow.
+ * LensFlare creates volumetric light through geological cracks.
+ * AgX tone mapping renders gold colors warm and natural (not ACES which oversaturates).
+ * HalfFloatType framebuffers enable the HDR pipeline.
  */
 export default function ExcavationPostProcessing({
   progress,
@@ -69,7 +81,6 @@ export default function ExcavationPostProcessing({
   )
 
   const n8aoColor = useMemo(() => new THREE.Color('#00174D'), [])
-  const lensFlareColorGain = useMemo(() => new THREE.Color('#D4A843'), [])
   const lensFlareEnabled = !isMobile && progress > 0.05 && progress < 0.85
 
   return (
@@ -97,11 +108,7 @@ export default function ExcavationPostProcessing({
       />
 
       {/* Lens Flare — volumetric light through geological cracks */}
-      <LensFlareWrapper
-        enabled={lensFlareEnabled}
-        progress={progress}
-        colorGain={lensFlareColorGain}
-      />
+      <LensFlareWrapper enabled={lensFlareEnabled} isMobile={isMobile} />
 
       {/* Depth of Field — bokeh shift between geological layers */}
       {!isMobile && (

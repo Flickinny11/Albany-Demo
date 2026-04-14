@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { Physics, CuboidCollider } from '@react-three/rapier'
+import { PerformanceMonitor, AdaptiveDpr } from '@react-three/drei'
 import GeologicalLayer from './GeologicalLayer'
 import DebrisSystem from './DebrisSystem'
 import GoldParticleVFX from './GoldParticleVFX'
@@ -8,9 +9,12 @@ import ExcavationLighting from './ExcavationLighting'
 import ExcavationPostProcessing from './ExcavationPostProcessing'
 
 /**
- * Main R3F scene: geological layers with CSM shaders, Rapier physics debris,
- * three.quarks gold particles, Environment IBL with Lightformers, maath damp camera,
- * and cinematic postprocessing (N8AO + Bloom + LensFlare + DOF + AgX).
+ * Main R3F scene: geological layers with CSM shaders + PBR textures,
+ * Rapier physics debris, three.quarks gold particles, Environment IBL,
+ * maath damp camera, cinematic postprocessing.
+ *
+ * PerformanceMonitor auto-adjusts DPR based on FPS.
+ * AdaptiveDpr responds to performance regression events.
  */
 export default function ExcavationScene({
   progress,
@@ -30,6 +34,10 @@ export default function ExcavationScene({
 
   return (
     <>
+      {/* Auto-adjusts DPR based on FPS monitoring */}
+      <PerformanceMonitor />
+      <AdaptiveDpr pixelated />
+
       <ExcavationCamera
         cameraY={cameraY}
         progress={progress}
@@ -40,7 +48,7 @@ export default function ExcavationScene({
 
       <Suspense fallback={null}>
         <Physics gravity={[0, -9.81, 0]} timeStep="vary">
-          {/* Geological layers with CSM-extended MeshPhysicalMaterial + FBM domain warping */}
+          {/* Geological layers: PBR textures + CSM procedural FBM domain warping */}
           {layers.map((layer) => (
             <GeologicalLayer
               key={layer.id}
@@ -53,7 +61,7 @@ export default function ExcavationScene({
             />
           ))}
 
-          {/* Physics-driven irregular rock debris */}
+          {/* Physics-driven irregular rock debris with PBR stone materials */}
           <DebrisSystem layers={layers} isMobile={isMobile} />
 
           {/* Floor collider to catch fallen debris */}
@@ -66,7 +74,7 @@ export default function ExcavationScene({
         )}
       </Suspense>
 
-      {/* Cinematic postprocessing pipeline */}
+      {/* Cinematic postprocessing: N8AO + Bloom + LensFlare + DOF + AgX */}
       <ExcavationPostProcessing
         progress={progress}
         isMobile={isMobile}

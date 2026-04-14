@@ -1,5 +1,6 @@
 // CSM vertex shader — displacement + scroll-driven cracking
 // Runs inside three-custom-shader-material extending MeshPhysicalMaterial
+// csm_Position is in OBJECT SPACE — CSM handles projection automatically
 
 uniform float uTime;
 uniform float uDissolveProgress;
@@ -8,7 +9,6 @@ uniform float uLayerSeed;
 varying vec2 vUv2;
 varying vec3 vWorldPos;
 
-// Simplex-style hash for vertex displacement
 float hash31(vec3 p) {
   p = fract(p * vec3(443.897, 441.423, 437.195));
   p += dot(p, p.yzx + 19.19);
@@ -46,4 +46,5 @@ void main() {
   displaced.z += disp + crackDisp;
 
   csm_Position = displaced;
+  csm_Normal = normal;
 }

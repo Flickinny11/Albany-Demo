@@ -167,9 +167,11 @@ export default function HeritageExcavation() {
             performance={{ min: 0.5 }}
             gl={{
               powerPreference: 'high-performance',
-              antialias: false, // Handled by TRAA / multisampling in EffectComposer
+              antialias: false, // Handled by multisampling in EffectComposer
               alpha: false,
+              stencil: false,
               toneMapping: 0, // Disabled — ToneMappingEffect handles it (AgX)
+              precision: isMobile ? 'mediump' : 'highp', // 2x perf gain on mobile GPUs
             }}
             camera={{ position: [0, 4, 5], fov: 55, near: 0.1, far: 100 }}
           >

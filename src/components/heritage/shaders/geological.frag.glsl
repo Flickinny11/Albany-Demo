@@ -1,6 +1,14 @@
 // CSM fragment shader — FBM domain warp + dissolve + ember edge
 // Runs inside three-custom-shader-material extending MeshPhysicalMaterial
-// Outputs: csm_DiffuseColor, csm_Roughness, csm_Metalness, csm_Emissive, csm_Bump
+//
+// Available outputs (v6.4.0):
+//   csm_DiffuseColor (vec4) — already includes map texture if provided
+//   csm_Roughness (float), csm_Metalness (float), csm_Emissive (vec3)
+//   csm_FragNormal (vec3, view space) — replaces csm_Bump which was removed
+//   csm_AO (float), csm_Clearcoat (float), csm_ClearcoatRoughness (float)
+//
+// NOTE: csm_Position and csm_UV do NOT exist in fragment shader.
+// Use varyings from the vertex shader instead.
 
 uniform float uTime;
 uniform float uDissolveProgress;
@@ -8,15 +16,15 @@ uniform vec3 uColorA;
 uniform vec3 uColorB;
 uniform vec3 uColorC;
 uniform float uLayerSeed;
-uniform float uFbmOctaves; // 6 desktop, 3 mobile
+uniform float uFbmOctaves;
 
 varying vec2 vUv2;
 varying vec3 vWorldPos;
 
 // ─── Simplex 3D Noise (Ashima Arts) ────────────────────────────
-vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec4 permute(vec4 x) { return mod289(((x * 34.0) + 10.0) * x); }
+vec3 mod289v3(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 mod289v4(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 permute(vec4 x) { return mod289v4(((x * 34.0) + 10.0) * x); }
 vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
 
 float snoise(vec3 v) {
@@ -35,7 +43,7 @@ float snoise(vec3 v) {
   vec3 x2 = x0 - i2 + C.yyy;
   vec3 x3 = x0 - D.yyy;
 
-  i = mod289(i);
+  i = mod289v3(i);
   vec4 p = permute(permute(permute(
     i.z + vec4(0.0, i1.z, i2.z, 1.0))
     + i.y + vec4(0.0, i1.y, i2.y, 1.0))
@@ -112,18 +120,26 @@ void main() {
   float pattern = domainWarp(vec3(uv * 3.0, uTime * 0.005));
   float pattern2 = domainWarp(vec3(uv * 7.0 + 100.0, uTime * 0.003));
 
-  // Color mixing — 3-color geological palette
-  vec3 stoneColor = mix(uColorA, uColorB, smoothstep(-0.2, 0.6, pattern));
-  stoneColor = mix(stoneColor, uColorC, smoothstep(0.5, 0.9, pattern) * 0.35);
+  // ─── Blend procedural color with base PBR texture ───
+  // csm_DiffuseColor is initialized to texture(map, vMapUv) * diffuse if map is provided
+  // We blend our procedural pattern INTO the existing texture for photorealism
+  vec3 proceduralColor = mix(uColorA, uColorB, smoothstep(-0.2, 0.6, pattern));
+  proceduralColor = mix(proceduralColor, uColorC, smoothstep(0.5, 0.9, pattern) * 0.35);
 
   // Veining — thin bright mineral lines
   float vein = smoothstep(0.015, 0.0, abs(pattern - 0.3));
   float vein2 = smoothstep(0.01, 0.0, abs(pattern2 - 0.5));
-  stoneColor = mix(stoneColor, uColorC * 1.4, vein * 0.5 + vein2 * 0.3);
+  proceduralColor = mix(proceduralColor, uColorC * 1.4, vein * 0.5 + vein2 * 0.3);
 
   // Micro-texture variation (prevents flat look)
   float micro = fbm(vec3(uv * 50.0, 0.0)) * 0.08;
-  stoneColor += micro;
+  proceduralColor += micro;
+
+  // Blend procedural with base texture (csm_DiffuseColor already has map if provided)
+  // 60% texture + 40% procedural for realistic geological look
+  vec3 blendedColor = mix(csm_DiffuseColor.rgb, proceduralColor, 0.4);
+  // Add vein highlights on top
+  blendedColor = mix(blendedColor, uColorC * 1.4, (vein * 0.3 + vein2 * 0.2));
 
   // ─── Dissolve system ───
   float dissolveNoise = fbm(vec3(uv * 8.0, uTime * 0.05 + uLayerSeed));
@@ -137,9 +153,9 @@ void main() {
   if (dissolveNoise < uDissolveProgress) discard;
 
   // ─── CSM outputs ───
-  csm_DiffuseColor = vec4(stoneColor, dissolveMask);
-  csm_Roughness = 0.75 - vein * 0.3;
-  csm_Metalness = vein * 0.15;
-  csm_Emissive = emberColor * edgeBand;
-  csm_Bump = vec3(0.0, 0.0, pattern * 0.3);
+  csm_DiffuseColor = vec4(blendedColor, dissolveMask);
+  csm_Roughness = 0.75 - vein * 0.3;         // Veins are slightly smoother
+  csm_Metalness = vein * 0.15;                // Veins have subtle metallic sheen
+  csm_Emissive = emberColor * edgeBand;       // Dissolve edges glow (picked up by Bloom)
+  csm_AO = 1.0 - pattern * 0.15;             // Procedural ambient occlusion in crevices
 }

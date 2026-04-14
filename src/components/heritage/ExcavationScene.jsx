@@ -1,6 +1,6 @@
 import { useMemo, Suspense } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Environment } from '@react-three/drei'
+import { Environment, Lightformer } from '@react-three/drei'
 import { Physics } from '@react-three/rapier'
 import {
   EffectComposer,
@@ -19,20 +19,19 @@ import DebrisSystem from './DebrisSystem'
 import GoldParticleField from './GoldParticleField'
 
 /**
- * Scroll-driven camera that descends through geological layers.
+ * Scroll-driven camera descending through geological strata.
  */
 function ExcavationCamera({ cameraY, progress }) {
   useFrame(({ camera }) => {
     const newY = THREE.MathUtils.lerp(camera.position.y, cameraY, 0.08)
-    const newX = Math.sin(progress * Math.PI * 2) * 0.4
+    const newX = Math.sin(progress * Math.PI * 2) * 0.35
 
     camera.position.set(newX, newY, 6)
     camera.lookAt(0, newY - 1.5, 0)
 
-    // FOV shifts for dramatic effect during transitions
     const mod = progress % 0.25
     const isTransitioning = mod < 0.05 || mod > 0.2
-    const targetFov = isTransitioning ? 60 : 52
+    const targetFov = isTransitioning ? 58 : 50
     camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 0.05)
     camera.updateProjectionMatrix()
   })
@@ -41,19 +40,17 @@ function ExcavationCamera({ cameraY, progress }) {
 }
 
 /**
- * Scene lighting — 3-point lighting for photorealism:
- * key light (warm directional), fill light (cool), rim light.
+ * 3-point lighting for photorealistic stone rendering.
  */
 function SceneLighting() {
   return (
     <>
-      {/* Ambient base — very subtle to keep shadows dark */}
-      <ambientLight intensity={0.15} color="#1a1a3a" />
+      <ambientLight intensity={0.1} color="#0a0a1a" />
 
-      {/* Key light — warm directional with proper shadow camera */}
+      {/* Key light — warm directional with shadow camera sized to scene */}
       <directionalLight
         position={[3, 8, 5]}
-        intensity={2.5}
+        intensity={2.0}
         color="#fff0d4"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -63,32 +60,25 @@ function SceneLighting() {
         shadow-camera-bottom={-15}
         shadow-camera-near={0.5}
         shadow-camera-far={50}
-        shadow-bias={-0.0005}
+        shadow-bias={-0.0004}
+        shadow-normalBias={0.02}
       />
 
       {/* Fill light — cool blue from the side */}
-      <directionalLight
-        position={[-5, 3, -2]}
-        intensity={0.4}
-        color="#6688cc"
-      />
+      <directionalLight position={[-5, 3, -2]} intensity={0.3} color="#6688cc" />
 
-      {/* Rim light — golden accent from behind/below */}
-      <pointLight position={[0, -4, -3]} intensity={0.6} color="#D4A843" distance={20} decay={2} />
+      {/* Rim light — golden accent from below */}
+      <pointLight position={[0, -4, -3]} intensity={0.5} color="#D4A843" distance={20} decay={2} />
 
-      {/* Subtle overhead fill for geological detail visibility */}
-      <hemisphereLight
-        color="#fff8e8"
-        groundColor="#0a0a1a"
-        intensity={0.3}
-      />
+      {/* Hemisphere for natural sky/ground fill */}
+      <hemisphereLight color="#fff8e8" groundColor="#0a0a1a" intensity={0.25} />
     </>
   )
 }
 
 /**
- * Main R3F scene containing geological layers, physics debris,
- * gold particles, camera, IBL environment, lighting, and post-processing.
+ * Main R3F scene: geological layers, Rapier physics debris,
+ * gold particles, Environment IBL with Lightformers, and cinematic postprocessing.
  */
 export default function ExcavationScene({
   progress,
@@ -115,86 +105,101 @@ export default function ExcavationScene({
       <ExcavationCamera cameraY={cameraY} progress={progress} />
       <SceneLighting />
 
-      {/* Image-Based Lighting — Environment map for photorealistic reflections */}
-      <Environment preset="sunset" background={false} environmentIntensity={0.8} />
+      {/* Image-Based Lighting with custom Lightformers for studio-quality reflections */}
+      <Environment preset="sunset" background={false} environmentIntensity={1.0}>
+        {/* Large warm key panel — drives gold highlights on stone */}
+        <Lightformer
+          form="rect"
+          intensity={2.0}
+          color="#fff0d4"
+          scale={[10, 5]}
+          position={[5, 8, -3]}
+        />
+        {/* Cool fill panel — adds blue accent to shadow side */}
+        <Lightformer
+          form="rect"
+          intensity={0.6}
+          color="#6688cc"
+          scale={[8, 4]}
+          position={[-6, 3, 2]}
+        />
+        {/* Golden rim ring — warm glow from below */}
+        <Lightformer
+          form="ring"
+          intensity={1.2}
+          color="#D4A843"
+          scale={[5, 5]}
+          position={[0, -3, -4]}
+        />
+      </Environment>
 
       <Suspense fallback={null}>
-        <Physics
-          gravity={[0, -9.81, 0]}
-          timeStep="vary"
-        >
-          {/* Geological layers with PBR stone shaders */}
+        <Physics gravity={[0, -9.81, 0]} timeStep="vary">
+          {/* Geological layers with PBR textures + dissolve */}
           {layers.map((layer) => (
             <GeologicalLayer
               key={layer.id}
+              id={layer.id}
               depth={layer.layerDepth}
-              colors={layer.colors}
               dissolveProgress={layer.dissolveProgress}
               isMobile={isMobile}
             />
           ))}
 
-          {/* Physics debris chunks with physical materials */}
+          {/* Irregular rock debris with physics */}
           <DebrisSystem layers={layers} isMobile={isMobile} />
         </Physics>
 
-        {/* Gold dust particles — outside Physics (they defy gravity) */}
+        {/* Gold dust particles (outside Physics — defy gravity) */}
         {goldParticlesActive && (
           <GoldParticleField progress={progress} isMobile={isMobile} />
         )}
       </Suspense>
 
-      {/* Post-processing pipeline (pmndrs — merged effects for performance) */}
+      {/* Cinematic postprocessing pipeline (pmndrs — merged effects) */}
       <EffectComposer multisampling={isMobile ? 0 : 4}>
-        {/* N8AO — better quality ambient occlusion than SSAO */}
+        {/* N8AO — high-quality ambient occlusion for stone crevices */}
         {!isMobile && (
           <N8AO
-            aoRadius={0.5}
-            intensity={2.5}
+            aoRadius={0.6}
+            intensity={3.0}
             aoSamples={16}
-            denoiseSamples={4}
+            denoiseSamples={6}
             denoiseRadius={12}
-            distanceFalloff={1.0}
+            distanceFalloff={1.2}
             screenSpaceRadius
           />
         )}
 
-        {/* Bloom — subtle natural glow, not blown-out */}
+        {/* Bloom — selective via luminanceThreshold, mipmapBlur for quality */}
         <Bloom
           intensity={bloomIntensity * 0.5}
-          luminanceThreshold={0.9}
-          luminanceSmoothing={0.4}
+          luminanceThreshold={0.85}
+          luminanceSmoothing={0.35}
           mipmapBlur
           kernelSize={isMobile ? KernelSize.SMALL : KernelSize.LARGE}
         />
 
-        {/* Depth of Field — cinematic shallow focus */}
+        {/* Depth of Field — cinematic shallow focus between layers */}
         {!isMobile && (
           <DepthOfField
             focusDistance={focusDistance}
-            focalLength={0.04}
-            bokehScale={3}
+            focalLength={0.035}
+            bokehScale={3.5}
           />
         )}
 
-        {/* Vignette — cinematic framing */}
-        <Vignette darkness={vignetteDarkness} offset={0.3} />
+        <Vignette darkness={vignetteDarkness} offset={0.25} />
 
-        {/* Chromatic Aberration — subtle, spikes during transitions */}
         <ChromaticAberration
           offset={chromaOffsetVec}
           blendFunction={BlendFunction.NORMAL}
         />
 
-        {/* Film grain — subtle texture for cinematic quality */}
-        <Noise
-          opacity={0.025}
-          premultiply
-          blendFunction={BlendFunction.SOFT_LIGHT}
-        />
+        <Noise opacity={0.02} premultiply blendFunction={BlendFunction.SOFT_LIGHT} />
 
-        {/* ACES Filmic tone mapping for natural HDR rendering */}
-        <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+        {/* AGX tonemapping — better highlight rolloff than ACES for stone */}
+        <ToneMapping mode={ToneMappingMode.AGX} />
       </EffectComposer>
     </>
   )

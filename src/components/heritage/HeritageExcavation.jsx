@@ -170,7 +170,6 @@ export default function HeritageExcavation() {
             camera={{ position: [0, 4, 6], fov: 52, near: 0.1, far: 100 }}
           >
             <color attach="background" args={['#000D26']} />
-            <fog attach="fog" args={['#000D26', 8, 25]} />
             <ExcavationScene
               progress={progress}
               excavationState={excavationState}
@@ -234,8 +233,7 @@ export default function HeritageExcavation() {
           className="excavation-header-card"
           style={{
             opacity: progress < 0.12 && isActive ? 1 : 0,
-            transform: `translate3d(0, ${progress < 0.12 ? 0 : -30}px, 0)`,
-            transition: 'opacity 0.6s ease, transform 0.6s ease',
+            transition: 'opacity 0.6s ease',
           }}
         >
           <div className="gold-line" />

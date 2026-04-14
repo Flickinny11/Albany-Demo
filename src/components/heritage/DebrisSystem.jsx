@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { InstancedRigidBodies, CuboidCollider } from '@react-three/rapier'
 import * as THREE from 'three'
+import createRockGeometry from './utils/createRockGeometry'
 
-// Seeded pseudo-random for deterministic debris generation
+// Seeded pseudo-random for deterministic debris placement
 function seededRandom(seed) {
   let s = seed
   return () => {
@@ -17,7 +18,7 @@ function generateDebrisInstances(count, layerY, id) {
     key: `debris-${id}-${i}`,
     position: [
       (rand() - 0.5) * 13,
-      layerY + rand() * 0.4,
+      layerY + rand() * 0.5,
       (rand() - 0.5) * 5,
     ],
     rotation: [
@@ -28,20 +29,10 @@ function generateDebrisInstances(count, layerY, id) {
   }))
 }
 
-// Pre-generate varied chunk sizes per layer
-function generateChunkSize(id) {
-  const rand = seededRandom(id.charCodeAt(0) * 777)
-  return [
-    0.2 + rand() * 0.4,  // width: 0.2–0.6
-    0.08 + rand() * 0.15, // height: 0.08–0.23
-    0.15 + rand() * 0.35, // depth: 0.15–0.5
-  ]
-}
-
 /**
- * Physics-driven debris chunks that fall when a geological layer dissolves.
- * Uses Rapier WASM rigid bodies with InstancedMesh + meshPhysicalMaterial
- * for photorealistic PBR stone chunks with environment reflections.
+ * Physics-driven debris chunks with irregular rock geometry.
+ * Uses simplex-noise displaced icosahedrons for realistic stone fragments.
+ * Rapier WASM rigid bodies with ConvexHull colliders for physical accuracy.
  */
 export default function DebrisSystem({ layers, isMobile }) {
   return (
@@ -52,7 +43,7 @@ export default function DebrisSystem({ layers, isMobile }) {
           layerY={layer.layerDepth}
           color={new THREE.Color(...layer.colors.a)}
           active={layer.debrisActive}
-          count={isMobile ? 15 : 40}
+          count={isMobile ? 12 : 35}
           id={layer.id}
         />
       ))}
@@ -68,28 +59,31 @@ function DebrisField({ count, layerY, color, active, id }) {
     [count, layerY, id]
   )
 
-  const chunkSize = useMemo(() => generateChunkSize(id), [id])
+  // Irregular rock geometry — NOT boxes
+  const rockGeo = useMemo(
+    () => createRockGeometry(id.charCodeAt(0) * 137, 0.2, 1),
+    [id]
+  )
 
   if (!active) return null
 
   return (
     <InstancedRigidBodies
       instances={instances}
-      colliders="cuboid"
+      colliders="hull"
       restitution={0.15}
-      friction={0.85}
-      linearDamping={0.08}
-      angularDamping={0.25}
+      friction={0.9}
+      linearDamping={0.25}
+      angularDamping={0.35}
     >
-      <instancedMesh args={[undefined, undefined, count]} castShadow receiveShadow>
-        <boxGeometry args={chunkSize} />
+      <instancedMesh args={[rockGeo, undefined, count]} castShadow receiveShadow>
         <meshPhysicalMaterial
           color={color}
-          roughness={0.82}
-          metalness={0.02}
-          envMapIntensity={0.6}
-          clearcoat={0.05}
-          clearcoatRoughness={0.8}
+          roughness={0.85}
+          metalness={0.0}
+          envMapIntensity={0.8}
+          clearcoat={0.08}
+          clearcoatRoughness={0.7}
         />
       </instancedMesh>
     </InstancedRigidBodies>

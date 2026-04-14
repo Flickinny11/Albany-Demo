@@ -70,8 +70,7 @@ export default function EraCard({ era, isActive }) {
       style={{
         opacity: isActive ? 1 : 0,
         pointerEvents: isActive ? 'auto' : 'none',
-        transform: `translate3d(0, ${isActive ? 0 : 20}px, 0)`,
-        transition: 'opacity 0.6s ease, transform 0.6s ease',
+        transition: 'opacity 0.6s ease',
       }}
       data-cursor-text={era.id}
     >

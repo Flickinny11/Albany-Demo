@@ -6,7 +6,7 @@ gsap.registerPlugin(SplitText)
 
 /**
  * HTML overlay card for each historical era.
- * Uses GSAP SplitText for staggered character reveal animations.
+ * Uses GSAP SplitText for staggered character reveal with spring physics.
  */
 export default function EraCard({ era, isActive }) {
   const cardRef = useRef()
@@ -20,7 +20,6 @@ export default function EraCard({ era, isActive }) {
 
     animatedRef.current = true
 
-    // SplitText splits into chars for staggered animation
     splitRef.current = new SplitText(titleRef.current, { type: 'chars,words' })
 
     const tl = gsap.timeline()
@@ -61,7 +60,7 @@ export default function EraCard({ era, isActive }) {
     }
   }, [isActive])
 
-  if (!era.title) return null // Skip header
+  if (!era.title) return null
 
   return (
     <div

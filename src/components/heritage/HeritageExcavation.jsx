@@ -14,15 +14,19 @@ import './HeritageExcavation.scss'
 gsap.registerPlugin(ScrollTrigger, SplitText)
 
 /**
- * "Excavation of Legacy" — Heritage section redesign.
+ * "Excavation of Legacy" — Heritage section redesign v2.
  *
- * Scrolling becomes archaeological excavation. A fullscreen 3D scene shows
- * stratified geological layers, each representing an era of ASU history.
- * Rapier WASM physics makes debris crumble. Historical photographs are
- * revealed with curtainsjs displacement shaders. Gold particles rise
- * during the final era.
+ * Scrolling becomes archaeological excavation. A fullscreen pinned 3D scene shows
+ * stratified geological layers — each representing an era of ASU's history.
+ * Layers use domain-warped FBM noise shaders via three-custom-shader-material
+ * extending MeshPhysicalMaterial for full PBR lighting. Rapier WASM physics
+ * makes debris crumble with real gravity. Historical photographs are revealed
+ * with curtainsjs displacement shaders. Post-processing creates cinematic depth
+ * via N8AO ambient occlusion, Bloom, LensFlare, DOF, and AgX tone mapping.
+ * Gold particles rise using three.quarks VFX system. Text animates with
+ * GSAP SplitText. Camera uses maath damp for frame-rate-independent smoothing.
  *
- * Section is 500vh tall — scroll drives the entire excavation.
+ * Section is 500vh tall — scroll drives the entire excavation (0→1 progress).
  */
 export default function HeritageExcavation() {
   const sectionRef = useRef(null)
@@ -47,7 +51,7 @@ export default function HeritageExcavation() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // ── Lazy load via IntersectionObserver ──
+  // Lazy load via IntersectionObserver with 200px rootMargin
   useEffect(() => {
     const section = sectionRef.current
     if (!section) return
@@ -65,7 +69,7 @@ export default function HeritageExcavation() {
     return () => observer.disconnect()
   }, [])
 
-  // ── Initialize curtainsjs ──
+  // Initialize curtainsjs for image displacement planes
   useEffect(() => {
     if (!isVisible || !curtainsContainerRef.current) return
 
@@ -75,7 +79,7 @@ export default function HeritageExcavation() {
         pixelRatio: Math.min(1.5, window.devicePixelRatio),
         autoResize: true,
         autoRender: true,
-        watchScroll: false, // We drive updates manually via scroll progress
+        watchScroll: false,
         premultipliedAlpha: true,
       })
 
@@ -96,7 +100,7 @@ export default function HeritageExcavation() {
     }
   }, [isVisible])
 
-  // ── Header text animation ──
+  // Header text animation with SplitText
   useEffect(() => {
     if (!isVisible || !headerTitleRef.current) return
 
@@ -137,17 +141,17 @@ export default function HeritageExcavation() {
     }
   }, [isVisible])
 
-  // Eras with image data (skip header)
+  // Eras with image data (skip header and surface)
   const imageEras = ERAS.filter((e) => e.img)
 
   return (
     <section
       ref={sectionRef}
       className="excavation-section"
-      data-cursor-text="Explore"
+      data-cursor-text="Excavate"
       data-cursor-color="#D4A843"
     >
-      {/* ── R3F Canvas (geological layers, physics, particles, post-processing) ── */}
+      {/* R3F Canvas — geological layers, physics, particles, post-processing */}
       {isVisible && (
         <div
           className="excavation-canvas-wrap"
@@ -163,11 +167,11 @@ export default function HeritageExcavation() {
             performance={{ min: 0.5 }}
             gl={{
               powerPreference: 'high-performance',
-              antialias: !isMobile,
+              antialias: false, // Handled by TRAA / multisampling in EffectComposer
               alpha: false,
-              toneMapping: 0, // Disable default — postprocessing handles it
+              toneMapping: 0, // Disabled — ToneMappingEffect handles it (AgX)
             }}
-            camera={{ position: [0, 4, 6], fov: 52, near: 0.1, far: 100 }}
+            camera={{ position: [0, 4, 5], fov: 55, near: 0.1, far: 100 }}
           >
             <color attach="background" args={['#000D26']} />
             <ExcavationScene
@@ -179,7 +183,7 @@ export default function HeritageExcavation() {
         </div>
       )}
 
-      {/* ── curtainsjs image planes ── */}
+      {/* curtainsjs container for image displacement planes */}
       <div
         ref={curtainsContainerRef}
         className="excavation-curtains-container"
@@ -190,6 +194,7 @@ export default function HeritageExcavation() {
         }}
       />
 
+      {/* curtainsjs image planes — historical photographs with shader reveals */}
       {isVisible && (
         <div
           className="excavation-images-wrap"
@@ -219,7 +224,7 @@ export default function HeritageExcavation() {
         </div>
       )}
 
-      {/* ── Text overlays ── */}
+      {/* Text overlays */}
       <div
         className="excavation-overlays"
         style={{
@@ -245,7 +250,7 @@ export default function HeritageExcavation() {
           </p>
         </div>
 
-        {/* Era cards */}
+        {/* Era cards with SplitText animation */}
         {imageEras.map((era) => {
           const textActive =
             era.textRange &&
@@ -262,7 +267,7 @@ export default function HeritageExcavation() {
         })}
       </div>
 
-      {/* ── Scroll spacer (500vh) ── */}
+      {/* Scroll spacer (500vh) */}
       <div className="excavation-scroll-spacer" />
     </section>
   )

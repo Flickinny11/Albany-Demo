@@ -3,7 +3,6 @@ import { InstancedRigidBodies, CuboidCollider } from '@react-three/rapier'
 import * as THREE from 'three'
 import createRockGeometry from './utils/createRockGeometry'
 
-// Seeded pseudo-random for deterministic debris placement
 function seededRandom(seed) {
   let s = seed
   return () => {
@@ -13,13 +12,14 @@ function seededRandom(seed) {
 }
 
 function generateDebrisInstances(count, layerY, id) {
-  const rand = seededRandom(id.charCodeAt(0) * 1000 + count)
+  const seedVal = typeof id === 'string' ? id.charCodeAt(0) * 1000 + count : count
+  const rand = seededRandom(seedVal)
   return Array.from({ length: count }, (_, i) => ({
     key: `debris-${id}-${i}`,
     position: [
-      (rand() - 0.5) * 13,
-      layerY + rand() * 0.5,
-      (rand() - 0.5) * 5,
+      (rand() - 0.5) * 14,
+      layerY + rand() * 0.4,
+      (rand() - 0.5) * 3,
     ],
     rotation: [
       rand() * Math.PI,
@@ -32,7 +32,7 @@ function generateDebrisInstances(count, layerY, id) {
 /**
  * Physics-driven debris chunks with irregular rock geometry.
  * Uses simplex-noise displaced icosahedrons for realistic stone fragments.
- * Rapier WASM rigid bodies with ConvexHull colliders for physical accuracy.
+ * MeshPhysicalMaterial with proper PBR stone properties (NOT plastic).
  */
 export default function DebrisSystem({ layers, isMobile }) {
   return (
@@ -41,13 +41,12 @@ export default function DebrisSystem({ layers, isMobile }) {
         <DebrisField
           key={layer.id}
           layerY={layer.layerDepth}
-          color={new THREE.Color(...layer.colors.a)}
+          color={layer.debrisColor || '#8B4513'}
           active={layer.debrisActive}
-          count={isMobile ? 12 : 35}
+          count={isMobile ? 15 : 40}
           id={layer.id}
         />
       ))}
-      {/* Floor collider to catch fallen debris */}
       <CuboidCollider position={[0, -15, 0]} args={[50, 0.5, 50]} />
     </>
   )
@@ -59,11 +58,10 @@ function DebrisField({ count, layerY, color, active, id }) {
     [count, layerY, id]
   )
 
-  // Irregular rock geometry — NOT boxes
-  const rockGeo = useMemo(
-    () => createRockGeometry(id.charCodeAt(0) * 137, 0.2, 1),
-    [id]
-  )
+  const rockGeo = useMemo(() => {
+    const seedVal = typeof id === 'string' ? id.charCodeAt(0) * 137 : 42
+    return createRockGeometry(seedVal, 0.2, 1)
+  }, [id])
 
   if (!active) return null
 
@@ -72,18 +70,19 @@ function DebrisField({ count, layerY, color, active, id }) {
       instances={instances}
       colliders="hull"
       restitution={0.15}
-      friction={0.9}
-      linearDamping={0.25}
-      angularDamping={0.35}
+      friction={0.85}
+      linearDamping={0.1}
+      angularDamping={0.3}
     >
       <instancedMesh args={[rockGeo, undefined, count]} castShadow receiveShadow>
+        {/* MeshPhysicalMaterial — stone, NOT plastic */}
         <meshPhysicalMaterial
           color={color}
           roughness={0.85}
-          metalness={0.0}
-          envMapIntensity={0.8}
-          clearcoat={0.08}
+          metalness={0.05}
+          clearcoat={0.1}
           clearcoatRoughness={0.7}
+          envMapIntensity={0.3}
         />
       </instancedMesh>
     </InstancedRigidBodies>

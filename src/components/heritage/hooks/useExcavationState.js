@@ -179,10 +179,11 @@ export default function useExcavationState(progress) {
       (progress > 0.55 && progress < 0.60) ||
       (progress > 0.78 && progress < 0.82)
 
-    const chromaOffset = isTransitioning ? 0.003 : 0.0008
-    const vignetteDarkness = activeEra.id === '1960s' ? 0.7 : 0.4
-    const bloomIntensity = activeEra.id === 'today' ? 2.0 : 1.2
-    const focusDistance = Math.abs(cameraY) * 0.05 + 0.01
+    // Research-driven cinematic values
+    const chromaOffset = isTransitioning ? 0.003 : 0.001
+    const vignetteDarkness = activeEra.id === '1960s' ? 0.5 : 0.35
+    const bloomIntensity = activeEra.id === 'today' ? 1.5 : 1.0
+    const focusDistance = Math.abs(cameraY) * 0.03 + 0.005
 
     return {
       activeEra,

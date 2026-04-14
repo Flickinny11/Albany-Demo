@@ -136,12 +136,15 @@ export default function GeologicalLayer({
         // PBR textures — loaded async, null until ready (CSM still renders procedurally)
         map={mapTexture}
         normalMap={normalTexture}
-        normalScale={new THREE.Vector2(1.5, 1.5)}
-        metalness={0.1}
-        roughness={0.85}
-        envMapIntensity={0.4}
-        clearcoat={0.15}
-        clearcoatRoughness={0.6}
+        // Photorealistic PBR stone properties (research-driven values):
+        normalScale={new THREE.Vector2(2.0, 2.0)}    // Strong surface detail
+        roughness={0.92}                               // Stone is rough, let roughness map modulate
+        metalness={0.0}                                // Stone is purely dielectric
+        envMapIntensity={0.85}                         // Sweet spot for natural reflections
+        clearcoat={0.25}                               // Slight polish/wet look on stone
+        clearcoatRoughness={0.4}                       // Semi-matte sealant finish
+        ior={1.5}                                      // Stone IOR for correct Fresnel
+        specularIntensity={1.0}                        // Physically correct specular
         side={THREE.DoubleSide}
         transparent
       />

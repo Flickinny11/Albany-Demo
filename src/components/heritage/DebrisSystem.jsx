@@ -70,19 +70,21 @@ function DebrisField({ count, layerY, color, active, id }) {
       instances={instances}
       colliders="hull"
       restitution={0.15}
-      friction={0.85}
-      linearDamping={0.1}
-      angularDamping={0.3}
+      friction={0.7}
+      linearDamping={0.5}
+      angularDamping={1.0}
+      density={2.5}
     >
       <instancedMesh args={[rockGeo, undefined, count]} castShadow receiveShadow>
-        {/* MeshPhysicalMaterial — stone, NOT plastic */}
+        {/* Photorealistic stone — research-driven PBR values */}
         <meshPhysicalMaterial
           color={color}
-          roughness={0.85}
-          metalness={0.05}
-          clearcoat={0.1}
-          clearcoatRoughness={0.7}
-          envMapIntensity={0.3}
+          roughness={0.92}
+          metalness={0.0}
+          clearcoat={0.15}
+          clearcoatRoughness={0.5}
+          envMapIntensity={0.8}
+          ior={1.5}
         />
       </instancedMesh>
     </InstancedRigidBodies>

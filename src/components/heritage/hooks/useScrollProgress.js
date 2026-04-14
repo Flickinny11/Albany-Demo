@@ -19,7 +19,7 @@ export default function useScrollProgress(triggerRef) {
       trigger: triggerRef.current,
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 1,
+      scrub: 1.5, // Smoother interpolation for longer scroll distance
       onUpdate: (self) => {
         setProgress(self.progress)
       },

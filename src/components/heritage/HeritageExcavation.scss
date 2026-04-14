@@ -15,9 +15,9 @@
   );
 }
 
-// ── Scroll spacer — creates 500vh of scroll distance ──
+// ── Scroll spacer — creates 800vh of scroll distance for comfortable pacing ──
 .excavation-scroll-spacer {
-  height: 500vh;
+  height: 800vh;
   pointer-events: none;
 }
 
@@ -207,7 +207,7 @@
 // ── Mobile responsive ──
 @media (max-width: 768px) {
   .excavation-scroll-spacer {
-    height: 400vh; // Shorter scroll on mobile
+    height: 600vh; // Shorter scroll on mobile but still comfortable
   }
 
   .excavation-header-card {

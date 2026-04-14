@@ -85,7 +85,7 @@ export default function ExcavationPostProcessing({
 
   return (
     <EffectComposer
-      multisampling={isMobile ? 4 : 0}
+      multisampling={4}
       frameBufferType={THREE.HalfFloatType}
     >
       {/* N8AO — high-quality ambient occlusion with navy-tinted shadows */}
